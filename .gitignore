@@ -1,0 +1,11 @@
+/public/js
+/public/css
+/node_modules
+/vendor
+.env
+.env.local
+.DS_Store
+*.swp
+*.swo
+*.log
+/AGENTS.md

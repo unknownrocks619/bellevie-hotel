@@ -1,0 +1,13 @@
+{
+  "name": "bellevie",
+  "version": "1.0.0",
+  "description": "A complete Laravel 11 hotel management and reservation system with integrated CRM.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
