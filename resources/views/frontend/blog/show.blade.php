@@ -4,20 +4,19 @@
 @section('seo_description', $seoDescription ?? $post->excerpt)
 @if(!empty($seoImage)) @section('seo_image', $seoImage) @endif
 @section('content')
-<div class="container-fluid py-5 mb-4" style="background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('{{ $post->featuredImageUrl('https://via.placeholder.com/1920x400') }}'); background-size: cover; background-position: center;">
-    <div class="container text-white">
-        <div class="mb-3">
-            @if($post->category)
-            <span class="badge" style="background:#C9A227;">{{ $post->category->name }}</span>
-            @endif
-            @if($post->is_featured)
-            <span class="badge bg-warning text-dark"><i class="bi bi-star-fill"></i> Featured</span>
-            @endif
-        </div>
-        <h1>{{ $post->title }}</h1>
-        <p class="text-white-50">Published on {{ $post->published_at ? \Carbon\Carbon::parse($post->published_at)->format('F d, Y') : 'N/A' }}</p>
-    </div>
-</div>
+@include('frontend.partials.page-hero', [
+    'eyebrow'     => ($post->category->name ?? null) ? strtoupper($post->category->name) : 'HOTEL BLOG',
+    'title'       => $post->title,
+    'subtitle'    => $post->published_at
+        ? 'Published on ' . \Carbon\Carbon::parse($post->published_at)->format('F d, Y')
+        : null,
+    'breadcrumbs' => array_filter([
+        ['label' => 'Home', 'url' => route('home')],
+        ['label' => 'Blog', 'url' => route('blog.index')],
+        $post->category ? ['label' => $post->category->name, 'url' => route('blog.index', ['category' => $post->category->slug])] : null,
+        ['label' => \Illuminate\Support\Str::limit($post->title, 40)],
+    ]),
+])
 
 <div class="container py-5">
     <div class="row">

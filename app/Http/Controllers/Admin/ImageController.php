@@ -66,13 +66,13 @@ class ImageController extends Controller
     {
         // Attempt to delete from Cloudinary
         if ($image->public_id && $image->source === 'cloudinary') {
-            try {
-                $cloudinary = app(\Cloudinary\Cloudinary::class);
-                $cloudinary->uploadApi()->destroy($image->public_id);
-            } catch (\Exception $e) {
-                // Log but don't block deletion
-                \Log::warning("Cloudinary delete failed for {$image->public_id}: " . $e->getMessage());
-            }
+            // try {
+            //     // $cloudinary = app(\Cloudinary\Cloudinary::class);
+            //     // $cloudinary->uploadApi()->destroy($image->public_id);
+            // } catch (\Exception $e) {
+            //     // Log but don't block deletion
+            //     \Log::warning("Cloudinary delete failed for {$image->public_id}: " . $e->getMessage());
+            // }
         }
 
         // Also remove from local storage if applicable

@@ -177,6 +177,35 @@
                             <strong>Website Font Preview:</strong> The website uses system fonts for optimal performance.
                         </div>
 
+                        {{-- ── Featured Rooms Display ── --}}
+                        <hr class="my-4">
+                        <h6 class="fw-bold mb-3" style="color:#0D1B2A;">Featured Rooms Display</h6>
+
+                        <div class="card border-0 shadow-sm p-3 mb-3" style="border-radius:10px;background:#fafafa;">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <p class="fw-semibold mb-1" style="font-size:.9rem;color:#0D1B2A;">
+                                        Show Price on Featured Room Cards
+                                    </p>
+                                    <p class="text-muted mb-0" style="font-size:.8rem;">
+                                        Controls whether the room price is visible on the homepage featured rooms section.
+                                        When off, only the room name and details are displayed.
+                                    </p>
+                                </div>
+                                <div class="form-check form-switch ms-4" style="flex-shrink:0;">
+                                    <input class="form-check-input" type="checkbox"
+                                           name="show_featured_room_price" value="1"
+                                           id="show_featured_room_price"
+                                           style="width:2.4em;height:1.3em;cursor:pointer;"
+                                           {{ (\App\Models\Setting::get('show_featured_room_price', '1') === '1') ? 'checked' : '' }}>
+                                    <label class="form-check-label fw-semibold ms-1" for="show_featured_room_price"
+                                           style="font-size:.82rem;color:#C9A227;cursor:pointer;">
+                                        On
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
                         <button type="submit" class="btn btn-primary" style="background:#C9A227;border:none;">Save
                             Appearance Settings</button>
                     </div>

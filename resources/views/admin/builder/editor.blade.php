@@ -1151,14 +1151,53 @@ const BLOCK_TYPES = {
     }
   },
 
+  // ── Columns (Row) ─────────────────────────────────────────────────────────
+  'columns': {
+    label: 'Columns (Row)', icon: 'bi-layout-three-columns',
+    desc: 'Two or more side-by-side columns — place any blocks inside each column',
+    defaults: {
+      bgColor: 'transparent', paddingTop: 60, paddingBottom: 60,
+      gutter: '4', contained: true,
+      columns: [
+        { id: 'cola', colSm: '12', colMd: '12', colLg: '7', pt:'0', pb:'0', ps:'0', pe:'0', mt:'0', mb:'0', blocks: [] },
+        { id: 'colb', colSm: '12', colMd: '12', colLg: '5', pt:'0', pb:'0', ps:'0', pe:'0', mt:'0', mb:'0', blocks: [] },
+      ]
+    },
+    fields: [], // fully custom panel — handled by renderColumnsPanel()
+    preview(cfg) {
+      const cols = cfg.columns || [];
+      const colPreviews = cols.map((c, ci) => {
+        const lgW = parseInt(c.colLg) || 6;
+        const blocks = (c.blocks || []).map(b => {
+          const bDef = BLOCK_TYPES[b.type] || {};
+          return `<div style="background:#fff;border:1px solid #e0e0e0;border-radius:4px;
+                              padding:3px 7px;font-size:.62rem;color:#555;margin-bottom:3px;
+                              display:flex;align-items:center;gap:4px;white-space:nowrap;overflow:hidden;">
+                    <i class="bi ${bDef.icon||'bi-box'}" style="color:#C9A227;font-size:.6rem;flex-shrink:0;"></i>
+                    <span style="overflow:hidden;text-overflow:ellipsis;">${bDef.label||b.type}</span>
+                  </div>`;
+        }).join('') || `<div style="text-align:center;color:#ccc;font-size:.6rem;padding:8px 0;
+                                    border:1px dashed #e0e0e0;border-radius:4px;">empty</div>`;
+        return `<div style="flex:${lgW};min-width:0;background:#f5f5f5;border-radius:6px;padding:7px;margin:0 3px;">
+                  <div style="font-size:.58rem;font-weight:700;color:#aaa;margin-bottom:5px;
+                               text-transform:uppercase;letter-spacing:.05em;">col-lg-${lgW}</div>
+                  ${blocks}
+                </div>`;
+      }).join('');
+      return `<div style="display:flex;align-items:stretch;padding:4px 0;min-height:50px;">${colPreviews}</div>`;
+    }
+  },
+
 };
 
 // ════════════════════════════════════════════════════════════════════════════
 //  BUILDER STATE
 // ════════════════════════════════════════════════════════════════════════════
-let sections     = {!! json_encode($builderData) !!};
-let selectedId   = null;
-let _imgCallback = null;   // callback(imageId, imageUrl) for image pickers in settings
+let sections         = {!! json_encode($builderData) !!};
+let selectedId       = null;
+let _imgCallback     = null;   // callback(imageId, imageUrl) for image pickers in settings
+let _colBlockEditing = null;   // { sectionId, colIdx, blockIdx } — nested block currently being edited
+let showHidden       = false;  // whether hidden blocks are visible in the editor canvas
 
 // Ensure sections is array
 if (!Array.isArray(sections)) sections = [];
@@ -1232,10 +1271,59 @@ function updateConfig(id, key, value) {
 //  CANVAS RENDER
 // ════════════════════════════════════════════════════════════════════════════
 
+function toggleHidden(id) {
+    const sec = sections.find(s => s.id === id);
+    if (!sec) return;
+    sec.config._hidden = !sec.config._hidden;
+    // If we just hid it and it was selected, deselect
+    if (sec.config._hidden && selectedId === id && !showHidden) {
+        selectedId = null;
+        renderSettings();
+    }
+    renderCanvas();
+    setDirty();
+}
+
+function toggleShowHidden() {
+    showHidden = !showHidden;
+    renderCanvas();
+}
+
 function renderCanvas() {
     const list = document.getElementById('sectionList');
 
-    if (sections.length === 0) {
+    // ── Hidden-blocks toolbar ─────────────────────────────────────────────
+    const hiddenCount = sections.filter(s => s.config?._hidden).length;
+    let toolbar = document.getElementById('hiddenToolbar');
+    if (!toolbar) {
+        toolbar = document.createElement('div');
+        toolbar.id = 'hiddenToolbar';
+        toolbar.style.cssText = 'margin-bottom:8px;display:none;';
+        list.parentNode.insertBefore(toolbar, list);
+    }
+    if (hiddenCount > 0 || showHidden) {
+        toolbar.style.display = '';
+        toolbar.innerHTML = `<button type="button" onclick="toggleShowHidden()"
+            style="width:100%;border:1px dashed ${showHidden ? '#C9A227' : '#ccc'};
+                   background:${showHidden ? '#fdf8ea' : '#fafafa'};
+                   color:${showHidden ? '#8a6d00' : '#999'};border-radius:6px;
+                   padding:5px 10px;font-size:.75rem;cursor:pointer;
+                   display:flex;align-items:center;justify-content:center;gap:6px;">
+            <i class="bi bi-eye${showHidden ? '' : '-slash'}"></i>
+            ${showHidden
+                ? `Showing ${hiddenCount} hidden block${hiddenCount !== 1 ? 's' : ''} — click to hide from editor`
+                : `${hiddenCount} hidden block${hiddenCount !== 1 ? 's' : ''} — click to show in editor`}
+        </button>`;
+    } else {
+        toolbar.style.display = 'none';
+    }
+
+    // ── Determine which sections to render ────────────────────────────────
+    const displaySections = showHidden
+        ? sections
+        : sections.filter(s => !s.config?._hidden);
+
+    if (displaySections.length === 0 && sections.length === 0) {
         list.innerHTML = `<div id="emptyCanvas">
             <i class="bi bi-layout-wtf"></i>
             <p class="mt-3" style="font-size:0.9rem;">Add blocks from the left panel to start building</p>
@@ -1243,49 +1331,64 @@ function renderCanvas() {
         return;
     }
 
-    list.innerHTML = sections.map((sec, i) => {
+    if (displaySections.length === 0) {
+        list.innerHTML = `<div id="emptyCanvas">
+            <i class="bi bi-eye-slash" style="font-size:2.5rem;opacity:.3;"></i>
+            <p class="mt-3" style="font-size:0.9rem;color:#aaa;">All blocks are hidden — use the toggle above to reveal them</p>
+        </div>`;
+        return;
+    }
+
+    list.innerHTML = displaySections.map((sec, i) => {
         const def      = BLOCK_TYPES[sec.type] || { label: sec.type, icon: 'bi-question', preview: () => '' };
-        const isFirst  = i === 0, isLast = i === sections.length - 1;
-        const isLocked = !!(sec.config && sec.config._locked);
+        const isFirst  = i === 0, isLast = i === displaySections.length - 1;
+        const isHidden = !!(sec.config?._hidden);
 
-        const deleteBtn = isLocked
-            ? `<span title="This block is required on this page and cannot be removed"
-                style="padding:2px 8px;font-size:0.75rem;color:#C9A227;opacity:.7;display:flex;align-items:center;gap:3px;">
-                <i class="bi bi-lock-fill"></i>
-               </span>`
-            : `<button onclick="event.stopPropagation();removeSection('${sec.id}')" title="Delete" style="color:#e53935;"><i class="bi bi-trash"></i></button>`;
+        const eyeBtn = `<button onclick="event.stopPropagation();toggleHidden('${sec.id}')"
+            title="${isHidden ? 'Unhide — show on frontend' : 'Hide from frontend'}"
+            style="color:${isHidden ? '#C9A227' : '#aaa'};">
+            <i class="bi bi-eye${isHidden ? '-slash' : ''}"></i>
+        </button>`;
 
-        const duplicateBtn = isLocked ? '' :
-            `<button onclick="event.stopPropagation();duplicateSection('${sec.id}')" title="Duplicate"><i class="bi bi-copy"></i></button>`;
-
-        const lockedBadge = isLocked
-            ? `<span style="font-size:.6rem;background:#C9A22720;color:#C9A227;border:1px solid #C9A22740;
-                            border-radius:10px;padding:1px 6px;margin-left:4px;">required</span>`
+        const hiddenBadge = isHidden
+            ? `<span style="font-size:.6rem;background:#fff3cd;color:#856404;border:1px solid #ffe69c;
+                            border-radius:10px;padding:1px 6px;margin-left:4px;">hidden</span>`
             : '';
 
-        return `<div class="section-card${selectedId === sec.id ? ' selected' : ''}" data-id="${sec.id}">
+        const cardStyle = isHidden
+            ? 'opacity:0.55;border-style:dashed;'
+            : '';
+
+        return `<div class="section-card${selectedId === sec.id ? ' selected' : ''}"
+                     data-id="${sec.id}" style="${cardStyle}">
             <div class="section-card-header" onclick="selectSection('${sec.id}')">
                 <span class="drag-handle"><i class="bi bi-grip-vertical"></i></span>
-                <i class="bi ${def.icon}" style="color:#C9A227;"></i>
-                <span class="block-label">${def.label}${lockedBadge}</span>
+                <i class="bi ${def.icon}" style="color:${isHidden ? '#aaa' : '#C9A227'};"></i>
+                <span class="block-label">${def.label}${hiddenBadge}</span>
                 <div class="actions">
                     <button onclick="event.stopPropagation();moveSection('${sec.id}',-1)" ${isFirst?'disabled':''} title="Move Up"><i class="bi bi-chevron-up"></i></button>
                     <button onclick="event.stopPropagation();moveSection('${sec.id}',1)" ${isLast?'disabled':''} title="Move Down"><i class="bi bi-chevron-down"></i></button>
-                    ${duplicateBtn}
-                    ${deleteBtn}
+                    ${eyeBtn}
+                    <button onclick="event.stopPropagation();duplicateSection('${sec.id}')" title="Duplicate"><i class="bi bi-copy"></i></button>
+                    <button onclick="event.stopPropagation();removeSection('${sec.id}')" title="Delete" style="color:#e53935;"><i class="bi bi-trash"></i></button>
                 </div>
             </div>
-            <div class="section-preview">${def.preview(sec.config)}</div>
+            ${isHidden ? '' : `<div class="section-preview">${def.preview(sec.config)}</div>`}
         </div>`;
     }).join('');
 
-    // Init Sortable
+    // Init Sortable (only on visible items — hidden sections maintain their position in the data array)
     Sortable.create(list, {
         handle: '.drag-handle',
         animation: 150,
         onEnd(evt) {
-            const moved = sections.splice(evt.oldIndex, 1)[0];
-            sections.splice(evt.newIndex, 0, moved);
+            // Map display indices back to sections array indices
+            const fromSec = displaySections[evt.oldIndex];
+            const toSec   = displaySections[evt.newIndex];
+            const fromIdx = sections.findIndex(s => s.id === fromSec.id);
+            const toIdx   = sections.findIndex(s => s.id === toSec.id);
+            const moved   = sections.splice(fromIdx, 1)[0];
+            sections.splice(toIdx, 0, moved);
             setDirty();
         }
     });
@@ -1308,6 +1411,75 @@ function renderSettings() {
     if (!sec) return;
     const def = BLOCK_TYPES[sec.type];
     if (!def) return;
+
+    // ── Columns block: fully custom panel ────────────────────────────────────
+    if (sec.type === 'columns') {
+        // Editing a nested block inside one of the columns?
+        if (_colBlockEditing && _colBlockEditing.sectionId === sec.id) {
+            const { colIdx, blockIdx } = _colBlockEditing;
+            const nestedBlk = sec.config.columns?.[colIdx]?.blocks?.[blockIdx];
+            if (nestedBlk) {
+                const nDef = BLOCK_TYPES[nestedBlk.type];
+                if (nDef) {
+                    let nHtml = `<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #f0f0f0;">
+                        <button type="button" onclick="colBackToRow()"
+                          style="border:none;background:none;color:#C9A227;cursor:pointer;font-size:.78rem;font-weight:600;padding:0;">
+                          <i class="bi bi-arrow-left me-1"></i>Back to Row
+                        </button>
+                      </div>
+                      <div style="margin-bottom:12px;">
+                        <span style="display:inline-flex;align-items:center;gap:6px;font-size:.82rem;font-weight:600;color:#333;">
+                          <i class="bi ${nDef.icon}" style="color:#C9A227;"></i>${nDef.label} — Column ${colIdx+1}
+                        </span>
+                      </div>`;
+                    if (!nDef.fields || nDef.fields.length === 0) {
+                        nHtml += `<p style="font-size:.8rem;color:#888;text-align:center;padding:12px 0;">
+                          This block has no configurable settings.</p>`;
+                    } else {
+                        nDef.fields.forEach(field => {
+                            const val = nestedBlk.config[field.key] !== undefined ? nestedBlk.config[field.key] : '';
+                            nHtml += `<div class="mb-3"><label class="form-label">${field.label}</label>`;
+                            if (field.type === 'text' || field.type === 'number') {
+                                nHtml += `<input type="${field.type}" class="form-control form-control-sm"
+                                    value="${escHtml(String(val))}"
+                                    oninput="colUpdateBlockConfig('${sec.id}',${colIdx},${blockIdx},'${field.key}',this.value)">`;
+                            } else if (field.type === 'textarea' || field.type === 'richtext') {
+                                nHtml += `<textarea class="form-control form-control-sm" rows="4"
+                                    oninput="colUpdateBlockConfig('${sec.id}',${colIdx},${blockIdx},'${field.key}',this.value)">${escHtml(String(val))}</textarea>`;
+                                if (field.type === 'richtext') nHtml += `<small class="text-muted">HTML supported</small>`;
+                            } else if (field.type === 'select') {
+                                nHtml += `<select class="form-select form-select-sm"
+                                    onchange="colUpdateBlockConfig('${sec.id}',${colIdx},${blockIdx},'${field.key}',this.value)">
+                                    ${field.options.map(o=>`<option value="${o}"${o==val?' selected':''}>${o}</option>`).join('')}
+                                    </select>`;
+                            } else if (field.type === 'toggle') {
+                                nHtml += `<div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" ${val?'checked':''}
+                                    onchange="colUpdateBlockConfig('${sec.id}',${colIdx},${blockIdx},'${field.key}',this.checked)">
+                                    </div>`;
+                            } else if (field.type === 'color') {
+                                nHtml += `<input type="color" class="form-control form-control-sm form-control-color"
+                                    value="${escHtml(String(val||'#000000'))}" style="max-width:60px;"
+                                    oninput="colUpdateBlockConfig('${sec.id}',${colIdx},${blockIdx},'${field.key}',this.value)">`;
+                            } else if (field.type === 'range') {
+                                nHtml += `<input type="range" class="form-range"
+                                    min="${field.min||0}" max="${field.max||1}" step="${field.step||0.1}" value="${val}"
+                                    oninput="colUpdateBlockConfig('${sec.id}',${colIdx},${blockIdx},'${field.key}',this.value)">
+                                    <small class="text-muted">${val}</small>`;
+                            }
+                            nHtml += `</div>`;
+                        });
+                    }
+                    panel.innerHTML = nHtml;
+                    return;
+                }
+            }
+            _colBlockEditing = null; // stale reference — reset
+        }
+        panel.innerHTML = renderColumnsPanel(sec);
+        return;
+    }
+    // ── End columns block ─────────────────────────────────────────────────────
 
     let html = `<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #f0f0f0;">
         <span style="display:inline-flex;align-items:center;gap:6px;font-size:0.82rem;font-weight:600;color:#333;">
@@ -1822,6 +1994,305 @@ function slPickImage(sectionId, slideIndex) {
 function _refreshSliderPreview(sectionId) { _refreshBlockPreview(sectionId); }
 
 // ════════════════════════════════════════════════════════════════════════════
+//  COLUMNS BLOCK HELPERS
+// ════════════════════════════════════════════════════════════════════════════
+
+function colRefreshPreview(sectionId) {
+    const sec  = sections.find(s => s.id === sectionId);
+    const card = document.querySelector(`.section-card[data-id="${sectionId}"] .section-preview`);
+    if (card && sec) card.innerHTML = BLOCK_TYPES.columns.preview(sec.config);
+}
+
+function colUpdateRow(sectionId, key, value) {
+    const sec = sections.find(s => s.id === sectionId);
+    if (!sec) return;
+    sec.config[key] = value;
+    colRefreshPreview(sectionId);
+    setDirty();
+}
+
+function colUpdateProp(sectionId, colIdx, key, value) {
+    const sec = sections.find(s => s.id === sectionId);
+    if (!sec || !sec.config.columns[colIdx]) return;
+    sec.config.columns[colIdx][key] = value;
+    colRefreshPreview(sectionId);
+    setDirty();
+}
+
+function colAddColumn(sectionId) {
+    const sec = sections.find(s => s.id === sectionId);
+    if (!sec || !Array.isArray(sec.config.columns)) return;
+    if (sec.config.columns.length >= 4) { alert('Maximum 4 columns per row.'); return; }
+    sec.config.columns.push({
+        id: 'col_' + Math.random().toString(36).slice(2, 8),
+        colSm: '12', colMd: '12', colLg: '4',
+        pt: '0', pb: '0', ps: '0', pe: '0', mt: '0', mb: '0', blocks: []
+    });
+    renderSettings();
+    colRefreshPreview(sectionId);
+    setDirty();
+}
+
+function colRemoveColumn(sectionId, colIdx) {
+    const sec = sections.find(s => s.id === sectionId);
+    if (!sec || !Array.isArray(sec.config.columns)) return;
+    if (sec.config.columns.length <= 1) { alert('A row must have at least one column.'); return; }
+    sec.config.columns.splice(colIdx, 1);
+    if (_colBlockEditing && _colBlockEditing.sectionId === sectionId && _colBlockEditing.colIdx === colIdx) {
+        _colBlockEditing = null;
+    }
+    renderSettings();
+    colRefreshPreview(sectionId);
+    setDirty();
+}
+
+function colAddBlock(sectionId, colIdx, blockType) {
+    const sec = sections.find(s => s.id === sectionId);
+    if (!sec || !sec.config.columns[colIdx]) return;
+    const def = BLOCK_TYPES[blockType];
+    if (!def) return;
+    if (!Array.isArray(sec.config.columns[colIdx].blocks)) sec.config.columns[colIdx].blocks = [];
+    sec.config.columns[colIdx].blocks.push({
+        id: 'cblk_' + Math.random().toString(36).slice(2, 10),
+        type: blockType,
+        config: { ...(def.defaults || {}) }
+    });
+    renderSettings();
+    colRefreshPreview(sectionId);
+    setDirty();
+}
+
+function colRemoveBlock(sectionId, colIdx, blockIdx) {
+    const sec = sections.find(s => s.id === sectionId);
+    if (!sec || !sec.config.columns[colIdx]) return;
+    sec.config.columns[colIdx].blocks.splice(blockIdx, 1);
+    if (_colBlockEditing && _colBlockEditing.sectionId === sectionId &&
+        _colBlockEditing.colIdx === colIdx && _colBlockEditing.blockIdx === blockIdx) {
+        _colBlockEditing = null;
+    }
+    renderSettings();
+    colRefreshPreview(sectionId);
+    setDirty();
+}
+
+function colMoveBlock(sectionId, colIdx, blockIdx, dir) {
+    const sec = sections.find(s => s.id === sectionId);
+    if (!sec || !sec.config.columns[colIdx]) return;
+    const blocks  = sec.config.columns[colIdx].blocks;
+    const newIdx  = blockIdx + dir;
+    if (newIdx < 0 || newIdx >= blocks.length) return;
+    const tmp = blocks[blockIdx]; blocks[blockIdx] = blocks[newIdx]; blocks[newIdx] = tmp;
+    renderSettings();
+    colRefreshPreview(sectionId);
+    setDirty();
+}
+
+function colEditBlock(sectionId, colIdx, blockIdx) {
+    _colBlockEditing = { sectionId, colIdx, blockIdx };
+    renderSettings();
+}
+
+function colBackToRow() {
+    _colBlockEditing = null;
+    renderSettings();
+}
+
+function colUpdateBlockConfig(sectionId, colIdx, blockIdx, key, value) {
+    const sec = sections.find(s => s.id === sectionId);
+    if (!sec || !sec.config.columns[colIdx] || !sec.config.columns[colIdx].blocks[blockIdx]) return;
+    sec.config.columns[colIdx].blocks[blockIdx].config[key] = value;
+    colRefreshPreview(sectionId);
+    setDirty();
+}
+
+function renderColumnsPanel(sec) {
+    const cfg  = sec.config;
+    const cols = cfg.columns || [];
+
+    const colWidthOpts = ['1','2','3','4','5','6','7','8','9','10','11','12','auto'];
+    const spacingOpts  = ['0','1','2','3','4','5'];
+    const gutterOpts   = ['0','1','2','3','4','5'];
+
+    const mkSel = (val, opts, onChange) =>
+        `<select class="form-select form-select-sm" style="font-size:.72rem;" onchange="${onChange}">
+           ${opts.map(v => `<option value="${v}"${v === String(val) ? ' selected' : ''}>${v}</option>`).join('')}
+         </select>`;
+
+    // ── Row settings ──────────────────────────────────────────────────────────
+    let html = `
+    <div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #f0f0f0;">
+      <span style="display:inline-flex;align-items:center;gap:6px;font-size:.82rem;font-weight:600;color:#333;">
+        <i class="bi bi-layout-three-columns" style="color:#C9A227;"></i>Columns (Row)
+      </span>
+    </div>
+
+    <div style="background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;margin-bottom:14px;">
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+                  color:#999;margin-bottom:8px;">Row Settings</div>
+
+      <div class="row g-2 mb-2">
+        <div class="col-6">
+          <label style="font-size:.75rem;color:#555;display:block;margin-bottom:2px;">Background</label>
+          <input type="color" class="form-control form-control-sm form-control-color" style="max-width:50px;"
+            value="${escHtml(cfg.bgColor || '#ffffff')}"
+            oninput="colUpdateRow('${sec.id}','bgColor',this.value)">
+        </div>
+        <div class="col-6">
+          <label style="font-size:.75rem;color:#555;display:block;margin-bottom:2px;">Gutter (g-N)</label>
+          ${mkSel(cfg.gutter || '4', gutterOpts, `colUpdateRow('${sec.id}','gutter',this.value)`)}
+        </div>
+      </div>
+
+      <div class="row g-2 mb-2">
+        <div class="col-6">
+          <label style="font-size:.75rem;color:#555;display:block;margin-bottom:2px;">Padding Top (px)</label>
+          <input type="number" class="form-control form-control-sm" value="${cfg.paddingTop ?? 60}"
+            style="font-size:.78rem;" oninput="colUpdateRow('${sec.id}','paddingTop',this.value)">
+        </div>
+        <div class="col-6">
+          <label style="font-size:.75rem;color:#555;display:block;margin-bottom:2px;">Padding Bottom (px)</label>
+          <input type="number" class="form-control form-control-sm" value="${cfg.paddingBottom ?? 60}"
+            style="font-size:.78rem;" oninput="colUpdateRow('${sec.id}','paddingBottom',this.value)">
+        </div>
+      </div>
+
+      <div class="row g-2">
+        <div class="col-12">
+          <label style="font-size:.75rem;color:#555;display:block;margin-bottom:2px;">Container</label>
+          <select class="form-select form-select-sm" style="font-size:.78rem;"
+            onchange="colUpdateRow('${sec.id}','contained',this.value==='true')">
+            <option value="true"${cfg.contained !== false ? ' selected' : ''}>Contained (max-width)</option>
+            <option value="false"${cfg.contained === false ? ' selected' : ''}>Full Width</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#999;">
+        Columns (${cols.length})
+      </span>
+      <button type="button" onclick="colAddColumn('${sec.id}')"
+        style="border:none;background:#C9A227;color:#fff;border-radius:4px;padding:2px 10px;
+               font-size:.73rem;cursor:pointer;font-weight:600;">
+        <i class="bi bi-plus"></i> Add Column
+      </button>
+    </div>`;
+
+    // ── Per-column panels ─────────────────────────────────────────────────────
+    cols.forEach((col, ci) => {
+        const colBlocks = col.blocks || [];
+
+        html += `
+        <div style="background:#f9f9f9;border:1px solid #e5e5e5;border-radius:8px;margin-bottom:10px;overflow:hidden;">
+          <div style="background:#e8e8e8;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:.75rem;font-weight:700;color:#444;">Column ${ci + 1}</span>
+            <button type="button" onclick="colRemoveColumn('${sec.id}',${ci})"
+              style="border:none;background:none;color:#e53935;font-size:.72rem;cursor:pointer;">
+              ✕ Remove
+            </button>
+          </div>
+          <div style="padding:10px;">
+
+            <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:5px;">
+              Bootstrap Width
+            </div>
+            <div class="row g-1 mb-3">
+              <div class="col-4">
+                <label style="font-size:.65rem;color:#888;display:block;margin-bottom:2px;">sm <span style="color:#bbb;">(≤575px)</span></label>
+                ${mkSel(col.colSm || '12', colWidthOpts, `colUpdateProp('${sec.id}',${ci},'colSm',this.value)`)}
+              </div>
+              <div class="col-4">
+                <label style="font-size:.65rem;color:#888;display:block;margin-bottom:2px;">md <span style="color:#bbb;">(576-991)</span></label>
+                ${mkSel(col.colMd || '12', colWidthOpts, `colUpdateProp('${sec.id}',${ci},'colMd',this.value)`)}
+              </div>
+              <div class="col-4">
+                <label style="font-size:.65rem;color:#888;display:block;margin-bottom:2px;">lg <span style="color:#bbb;">(≥992px)</span></label>
+                ${mkSel(col.colLg || '6', colWidthOpts, `colUpdateProp('${sec.id}',${ci},'colLg',this.value)`)}
+              </div>
+            </div>
+
+            <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:5px;">
+              Padding <span style="font-weight:400;color:#bbb;">(Bootstrap p-N classes)</span>
+            </div>
+            <div class="row g-1 mb-3">
+              ${[['pt','Top'],['pb','Bot'],['ps','Left'],['pe','Right']].map(([k, l]) => `
+                <div class="col-3">
+                  <label style="font-size:.63rem;color:#999;display:block;margin-bottom:2px;">${l}</label>
+                  ${mkSel(col[k] || '0', spacingOpts, `colUpdateProp('${sec.id}',${ci},'${k}',this.value)`)}
+                </div>`).join('')}
+            </div>
+
+            <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:5px;">
+              Margin <span style="font-weight:400;color:#bbb;">(Bootstrap m-N classes)</span>
+            </div>
+            <div class="row g-1 mb-3">
+              ${[['mt','Top'],['mb','Bottom']].map(([k, l]) => `
+                <div class="col-3">
+                  <label style="font-size:.63rem;color:#999;display:block;margin-bottom:2px;">${l}</label>
+                  ${mkSel(col[k] || '0', spacingOpts, `colUpdateProp('${sec.id}',${ci},'${k}',this.value)`)}
+                </div>`).join('')}
+            </div>
+
+            <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;color:#aaa;margin-bottom:6px;">
+              Blocks in this column
+            </div>`;
+
+        // Blocks list
+        if (colBlocks.length === 0) {
+            html += `<div style="text-align:center;padding:10px 0;color:#ccc;font-size:.75rem;
+                                  border:1px dashed #ddd;border-radius:5px;margin-bottom:8px;">
+                       No blocks yet
+                     </div>`;
+        } else {
+            colBlocks.forEach((blk, bi) => {
+                const bDef = BLOCK_TYPES[blk.type] || { label: blk.type, icon: 'bi-box' };
+                const isFirst = bi === 0, isLast = bi === colBlocks.length - 1;
+                html += `
+                <div style="background:#fff;border:1px solid #e0e0e0;border-radius:6px;padding:5px 8px;
+                             margin-bottom:5px;display:flex;align-items:center;gap:5px;">
+                  <i class="bi ${bDef.icon}" style="color:#C9A227;font-size:.78rem;flex-shrink:0;"></i>
+                  <span style="font-size:.73rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#333;">
+                    ${bDef.label}
+                  </span>
+                  <button type="button" title="Edit settings"
+                    onclick="colEditBlock('${sec.id}',${ci},${bi})"
+                    style="border:none;background:none;color:#C9A227;cursor:pointer;font-size:.78rem;padding:0 3px;">
+                    <i class="bi bi-pencil-fill"></i></button>
+                  <button type="button" title="Move up" ${isFirst ? 'disabled' : ''}
+                    onclick="colMoveBlock('${sec.id}',${ci},${bi},-1)"
+                    style="border:none;background:none;color:${isFirst ? '#ddd' : '#888'};cursor:pointer;font-size:.72rem;padding:0 2px;">
+                    <i class="bi bi-chevron-up"></i></button>
+                  <button type="button" title="Move down" ${isLast ? 'disabled' : ''}
+                    onclick="colMoveBlock('${sec.id}',${ci},${bi},1)"
+                    style="border:none;background:none;color:${isLast ? '#ddd' : '#888'};cursor:pointer;font-size:.72rem;padding:0 2px;">
+                    <i class="bi bi-chevron-down"></i></button>
+                  <button type="button" title="Remove"
+                    onclick="colRemoveBlock('${sec.id}',${ci},${bi})"
+                    style="border:none;background:none;color:#e53935;cursor:pointer;font-size:.78rem;padding:0 2px;">
+                    <i class="bi bi-trash"></i></button>
+                </div>`;
+            });
+        }
+
+        // Add block selector
+        html += `
+            <select class="form-select form-select-sm" style="font-size:.75rem;margin-top:4px;"
+              onchange="if(this.value){colAddBlock('${sec.id}',${ci},this.value);this.value='';}">
+              <option value="">+ Add block to this column…</option>
+              ${Object.entries(BLOCK_TYPES)
+                  .filter(([t]) => t !== 'columns' && t !== 'floating-btn')
+                  .map(([t, d]) => `<option value="${t}">${d.label}</option>`)
+                  .join('')}
+            </select>
+          </div>
+        </div>`;
+    });
+
+    return html;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 //  IMAGE PICKER (reuses ipLibraryModal)
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -1943,8 +2414,33 @@ function builderSave() {
         },
         body: JSON.stringify({ sections })
     })
-    .then(r => r.json())
-    .then(data => {
+    .then(async r => {
+        const data = await r.json();
+        if (!r.ok || data.success === false) {
+            status.textContent = '✗ ' + (data.message || 'Save failed');
+            status.className = 'error';
+            // Show persistent alert for validation errors (422)
+            if (r.status === 422 || data.success === false) {
+                let alertEl = document.getElementById('saveErrorAlert');
+                if (!alertEl) {
+                    alertEl = document.createElement('div');
+                    alertEl.id = 'saveErrorAlert';
+                    alertEl.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);' +
+                        'z-index:9999;background:#fff3cd;border:1px solid #ffe69c;color:#664d03;' +
+                        'border-radius:8px;padding:12px 18px;max-width:520px;width:90%;' +
+                        'box-shadow:0 4px 20px rgba(0,0,0,.15);font-size:.85rem;line-height:1.5;' +
+                        'display:flex;align-items:flex-start;gap:10px;';
+                    document.body.appendChild(alertEl);
+                }
+                alertEl.innerHTML = `<i class="bi bi-exclamation-triangle-fill" style="color:#c9a227;font-size:1.1rem;flex-shrink:0;margin-top:1px;"></i>
+                    <div style="flex:1;">${data.message || 'Save failed.'}</div>
+                    <button onclick="document.getElementById('saveErrorAlert').remove()"
+                        style="border:none;background:none;color:#664d03;cursor:pointer;font-size:1rem;padding:0;flex-shrink:0;">✕</button>`;
+            }
+            return;
+        }
+        // Remove any previous error alert
+        document.getElementById('saveErrorAlert')?.remove();
         status.textContent = '✓ Saved';
         status.className = 'saved';
         setTimeout(() => { status.textContent = ''; status.className = ''; }, 3000);

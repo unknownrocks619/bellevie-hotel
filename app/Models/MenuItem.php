@@ -48,4 +48,24 @@ class MenuItem extends Model
 
         return $routeName;
     }
+
+    public function menuLink() {
+        if($this->link_type) {
+            return match($this->link_type_ref_id) {
+                'page'  => '/page/'.(Page::where('is_active','=',1)->where('id','=', $this->link_type_ref_id)->first()?->slug ?? ''),
+                'blog'  => '/blog/'.(BlogPost::find($this->link_ref_id)?->slug ?? ''),
+                'blog-category' => '/blog/category/'.(BlogCategory::find($request->link_ref_id)?->slug ?? ''),
+                'rooms' => '/rooms',
+                'single-room'   => '/rooms/'. (Room::find($request->link_ref_id)?->slug ?? ''),
+                default => $this->url
+            };
+
+        } else if ($this->route_name && Route::has($this->route_name) ) {
+            return route($this->route_name);
+        }
+
+
+        return $this->route_name;
+        
+    }
 }

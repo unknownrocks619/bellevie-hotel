@@ -76,6 +76,9 @@ class SettingsController extends Controller
             }
         }
 
+        // Boolean toggles — checkboxes are absent when unchecked, so handle explicitly
+        Setting::set('show_featured_room_price', $request->has('show_featured_room_price') ? '1' : '0');
+
         // Handle logo image from picker
         if ($request->filled('logo_image_id')) {
             $img = $this->images->find((int) $request->logo_image_id);

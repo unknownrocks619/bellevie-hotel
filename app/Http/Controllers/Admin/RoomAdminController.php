@@ -73,6 +73,7 @@ class RoomAdminController extends Controller
             'gallery_image_ids.*'  => 'exists:images,id',
             'is_active'            => 'boolean',
             'is_featured'          => 'boolean',
+            'show_price'           => 'boolean',
             'amenities'            => 'nullable|array',
             'seo_image_id'         => 'nullable|exists:images,id',
             'title_seo'            => 'nullable|string|max:70',
@@ -84,7 +85,8 @@ class RoomAdminController extends Controller
             'featured_image_id', 'gallery_image_ids', 'amenities',
             'seo_image_id', 'title_seo', 'description_seo', 'tags_seo'
         );
-        $data['slug'] = Str::slug($request->name);
+        $data['slug']        = Str::slug($request->name);
+        $data['show_price']  = $request->boolean('show_price');   // false when checkbox absent
 
         // Resolve featured image URL from images table (keeps rooms.featured_image populated)
         if ($request->filled('featured_image_id')) {
@@ -155,6 +157,7 @@ class RoomAdminController extends Controller
             'gallery_image_ids.*'  => 'exists:images,id',
             'is_active'            => 'boolean',
             'is_featured'          => 'boolean',
+            'show_price'           => 'boolean',
             'amenities'            => 'nullable|array',
             'seo_image_id'         => 'nullable|exists:images,id',
             'title_seo'            => 'nullable|string|max:70',
@@ -166,6 +169,7 @@ class RoomAdminController extends Controller
             'featured_image_id', 'gallery_image_ids', 'amenities',
             'seo_image_id', 'title_seo', 'description_seo', 'tags_seo'
         );
+        $data['show_price'] = $request->boolean('show_price');   // false when checkbox absent
 
         if ($request->filled('featured_image_id')) {
             $img = Image::find($request->featured_image_id);

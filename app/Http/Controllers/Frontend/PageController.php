@@ -8,8 +8,9 @@ use App\Models\SysSeo;
 
 class PageController extends Controller
 {
-    public function show(Page $page)
+    public function show(string $page)
     {
+        $page = Page::where('is_active','=',1)->where('slug','=',$page)->firstOrFail();
         if (!$page->is_active) {
             abort(404);
         }

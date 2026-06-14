@@ -1,8 +1,6 @@
-<section style="padding:0 0 60px;background:#f8f9fa;">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card border-0 shadow-sm" style="border-radius:12px;overflow:hidden;">
+@php $nested = $config['_nested'] ?? false; @endphp
+@if(!$nested)<section style="padding:0 0 60px;background:#f8f9fa;"><div class="container"><div class="row justify-content-center"><div class="col-lg-8">@endif
+                <div class="card border-0 shadow-sm" style="border-radius:12px;overflow:hidden;{{ $nested ? 'margin-top:16px;' : '' }}">
                     <div class="card-body p-4">
                         <h4 style="font-size:1rem;font-weight:700;color:#0D1B2A;margin-bottom:16px;">
                             Quick Links
@@ -27,7 +25,4 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</section>
+@if(!$nested)</div></div></div></section>@endif

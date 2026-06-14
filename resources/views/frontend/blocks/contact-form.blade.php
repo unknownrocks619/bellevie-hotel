@@ -1,7 +1,5 @@
-<section style="padding:60px 0;background:#f8f9fa;">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
+@php $nested = $config['_nested'] ?? false; @endphp
+@if(!$nested)<section style="padding:60px 0;background:#f8f9fa;"><div class="container"><div class="row justify-content-center"><div class="col-lg-8">@endif
                 <div class="card border-0 shadow-sm" style="border-radius:12px;overflow:hidden;">
                     <div class="card-body p-4 p-md-5">
 
@@ -113,7 +111,4 @@
 
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</section>
+@if(!$nested)</div></div></div></section>@endif

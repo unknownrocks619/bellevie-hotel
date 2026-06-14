@@ -3,13 +3,17 @@
 
 @section('content')
 
-<!-- Page Header -->
-<div style="padding-top: 80px; background: linear-gradient(rgba(13,27,42,0.88), rgba(13,27,42,0.88)), url('https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1400&q=60') center/cover; min-height: 220px; display:flex; align-items:center;">
-    <div class="container text-center text-white py-5">
-        <p class="text-uppercase mb-2" style="letter-spacing:3px; color:var(--gold); font-size:0.85rem;">Bellevie Hotel</p>
-        <h1 class="mb-0" style="font-size:2.8rem;">Make a Reservation</h1>
-    </div>
-</div>
+@include('frontend.partials.page-hero', [
+    'eyebrow'     => 'SECURE YOUR STAY',
+    'title'       => 'Make a Reservation',
+    'subtitle'    => 'Complete your booking in minutes — instant confirmation guaranteed.',
+    'breadcrumbs' => [
+        ['label' => 'Home',  'url' => route('home')],
+        ['label' => 'Rooms', 'url' => route('rooms.index')],
+        ['label' => 'Reserve'],
+    ],
+    'minHeight'   => '280px',
+])
 
 <div class="container py-5">
     <form action="{{ route('booking.store') }}" method="POST" id="bookingForm">

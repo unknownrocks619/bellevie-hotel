@@ -1,9 +1,19 @@
 @extends('layouts.app')
 
 @section('content')
-<div style="padding-top: 100px;">
+
+@include('frontend.partials.page-hero', [
+    'eyebrow'     => 'OUR STORY',
+    'title'       => 'About Bellevie Hotel',
+    'subtitle'    => 'Luxury redefined — discover the story behind one of the world\'s finest hotel experiences.',
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('home')],
+        ['label' => 'About'],
+    ],
+])
+
+<div style="padding:60px 0;">
     <div class="container">
-        <h1>About Bellevie Hotel</h1>
         <p>About content here</p>
     </div>
 </div>
