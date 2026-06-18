@@ -3,13 +3,17 @@
 
 @section('content')
 
-<!-- Page Header -->
-<div style="padding-top: 80px; background: linear-gradient(rgba(13,27,42,0.88), rgba(13,27,42,0.88)), url('https://images.unsplash.com/photo-1631049307264-da0ec9d70304?auto=format&fit=crop&w=1400&q=60') center/cover; min-height: 220px; display:flex; align-items:center;">
-    <div class="container text-center text-white py-5">
-        <p class="text-uppercase mb-2" style="letter-spacing:3px; color:var(--gold); font-size:0.85rem;">Bellevie Hotel</p>
-        <h1 class="mb-0" style="font-size:2.8rem;">Make a Reservation</h1>
-    </div>
-</div>
+@include('frontend.partials.page-hero', [
+    'eyebrow'     => 'SECURE YOUR STAY',
+    'title'       => 'Make a Reservation',
+    'subtitle'    => 'Complete your booking in minutes — instant confirmation guaranteed.',
+    'breadcrumbs' => [
+        ['label' => 'Home',  'url' => route('home')],
+        ['label' => 'Rooms', 'url' => route('rooms.index')],
+        ['label' => 'Reserve'],
+    ],
+    'minHeight'   => '280px',
+])
 
 <div class="container py-5">
     <form action="{{ route('booking.store') }}" method="POST" id="bookingForm">
@@ -49,12 +53,14 @@
                         <div class="col-md-6 col-xl-4">
                             <div class="room-card-select h-100"
                                  id="card-{{ $r->id }}"
-                                 onclick="selectRoom({{ $r->id }}, {{ $r->price_per_night }}, '{{ addslashes($r->name) }}', '{{ $r->featured_image ?? '' }}', '{{ addslashes($r->bed_type ?? '') }}', {{ $r->max_adults }})">
+                                 onclick="selectRoom({{ $r->id }}, {{ $r->price_per_night }}, '{{ addslashes($r->name) }}', '{{ $r->featured_image ?? '' }}', '{{ addslashes($r->bed_type ?? '') }}', {{ $r->max_adults }}, {{ $r->show_price ? true : false }})">
                                 <div class="room-img-wrap">
                                     <img src="{{ $r->featured_image ?: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=400&q=60' }}"
                                          alt="{{ $r->name }}"
                                          class="room-img">
-                                    <div class="room-price-badge">${{ number_format($r->price_per_night) }}<span>/night</span></div>
+                                        @if($r->show_price)
+                                            <div class="room-price-badge">${{ number_format($r->price_per_night) }}<span>/night</span></div>
+                                        @endif
                                     <div class="room-check-overlay"><i class="bi bi-check-circle-fill"></i></div>
                                 </div>
                                 <div class="room-card-body">
@@ -232,6 +238,7 @@
                             </div>
                             <div class="card-body p-0">
                                 <div class="p-3 border-bottom">
+                                    
                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                         <small class="text-muted">Rate per night</small>
                                         <span id="summaryNightRate" class="fw-bold" style="color:var(--gold)">—</span>
@@ -287,128 +294,128 @@
 </div>
 
 <style>
-/* ── Booking Page Styles ─────────────────────────── */
-.booking-step {
-    background: #fff;
-    border-radius: 12px;
-    padding: 1.75rem;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-}
+    /* ── Booking Page Styles ─────────────────────────── */
+    .booking-step {
+        background: #fff;
+        border-radius: 12px;
+        padding: 1.75rem;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
 
-.step-badge {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--gold);
-    color: #fff;
-    font-weight: 700;
-    font-size: 0.95rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
+    .step-badge {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--gold);
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
 
-/* Room selection cards */
-.room-card-select {
-    border-radius: 10px;
-    overflow: hidden;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-    user-select: none;
-}
-.room-card-select:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-    border-color: rgba(201,162,39,0.4);
-}
-.room-card-select.selected {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(201,162,39,0.18);
-}
-.room-img-wrap {
-    position: relative;
-    overflow: hidden;
-}
-.room-img {
-    width: 100%;
-    height: 155px;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.3s;
-}
-.room-card-select:hover .room-img {
-    transform: scale(1.04);
-}
-.room-price-badge {
-    position: absolute;
-    bottom: 8px;
-    left: 10px;
-    background: rgba(13,27,42,0.82);
-    color: #fff;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-weight: 700;
-    font-size: 0.9rem;
-}
-.room-price-badge span { font-size: 0.7rem; font-weight: 400; }
-.room-check-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(201,162,39,0.15);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5rem;
-    color: var(--gold);
-    opacity: 0;
-    transition: opacity 0.2s;
-}
-.room-card-select.selected .room-check-overlay { opacity: 1; }
-.room-card-body {
-    padding: 0.75rem 1rem 1rem;
-}
-.room-name { font-family: 'Playfair Display', serif; }
-.room-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    font-size: 0.75rem;
-    color: #777;
-}
+    /* Room selection cards */
+    .room-card-select {
+        border-radius: 10px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        user-select: none;
+    }
+    .room-card-select:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        border-color: rgba(201,162,39,0.4);
+    }
+    .room-card-select.selected {
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px rgba(201,162,39,0.18);
+    }
+    .room-img-wrap {
+        position: relative;
+        overflow: hidden;
+    }
+    .room-img {
+        width: 100%;
+        height: 155px;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.3s;
+    }
+    .room-card-select:hover .room-img {
+        transform: scale(1.04);
+    }
+    .room-price-badge {
+        position: absolute;
+        bottom: 8px;
+        left: 10px;
+        background: rgba(13,27,42,0.82);
+        color: #fff;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.9rem;
+    }
+    .room-price-badge span { font-size: 0.7rem; font-weight: 400; }
+    .room-check-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(201,162,39,0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        color: var(--gold);
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+    .room-card-select.selected .room-check-overlay { opacity: 1; }
+    .room-card-body {
+        padding: 0.75rem 1rem 1rem;
+    }
+    .room-name { font-family: 'Playfair Display', serif; }
+    .room-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        color: #777;
+    }
 
-/* Summary sidebar */
-.summary-room-img-wrap {
-    position: relative;
-    height: 160px;
-    overflow: hidden;
-}
-.summary-room-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-.summary-room-img-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, rgba(13,27,42,0.85) 50%, transparent);
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 1rem;
-}
+    /* Summary sidebar */
+    .summary-room-img-wrap {
+        position: relative;
+        height: 160px;
+        overflow: hidden;
+    }
+    .summary-room-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .summary-room-img-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(13,27,42,0.85) 50%, transparent);
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        padding: 1rem;
+    }
 
-/* Smooth reveal */
-#bookingDetails {
-    animation: fadeSlideIn 0.4s ease;
-}
-@keyframes fadeSlideIn {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
+    /* Smooth reveal */
+    #bookingDetails {
+        animation: fadeSlideIn 0.4s ease;
+    }
+    @keyframes fadeSlideIn {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
 </style>
 
 <script>
@@ -444,7 +451,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-function selectRoom(id, price, name, img, bed, maxAdults) {
+function selectRoom(id, price, name, img, bed, maxAdults,showPrice = false) {
     selectedRoomId = id;
     selectedRoomPrice = parseFloat(price);
 
@@ -467,7 +474,12 @@ function selectRoom(id, price, name, img, bed, maxAdults) {
     document.getElementById('summaryRoomName').textContent = name;
     document.getElementById('summaryRoomType').textContent = bed ? '🛏 ' + bed : '';
     document.getElementById('summaryBed').textContent = bed || '—';
-    document.getElementById('summaryNightRate').textContent = '$' + parseFloat(price).toFixed(0);
+    if(showPrice == true) {
+        document.getElementById('summaryNightRate').textContent = '$' + parseFloat(price).toFixed(0);
+    } else {
+        $('#summaryNightRate').parent().remove();
+    }
+
     if (img) document.getElementById('summaryRoomImg').src = img;
 
     updateSummary();

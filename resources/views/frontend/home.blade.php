@@ -75,7 +75,14 @@
                     </div>
                     <div class="card-footer bg-white border-top">
                         <div class="d-flex justify-content-between align-items-center">
-                            <span style="color: var(--gold); font-weight: 700; font-size: 1.2rem;">{{ \App\Models\Setting::get('currency_symbol', '$') }}{{ $room->price_per_night }}</span>
+                            @if(\App\Models\Setting::get('show_featured_room_price', '1') === '1')
+                            <span style="color: var(--gold); font-weight: 700; font-size: 1.2rem;">
+                                {{ \App\Models\Setting::get('currency_symbol', '$') }}{{ number_format($room->price_per_night) }}
+                                <span style="font-size:.75rem;font-weight:400;color:#aaa;">/night</span>
+                            </span>
+                            @else
+                            <span style="font-size:.82rem;color:#aaa;font-style:italic;">Price on request</span>
+                            @endif
                             <a href="{{ route('rooms.show', $room) }}" class="btn btn-sm" style="background-color: var(--gold); color: white; border: none; text-decoration: none;">View Details</a>
                         </div>
                     </div>

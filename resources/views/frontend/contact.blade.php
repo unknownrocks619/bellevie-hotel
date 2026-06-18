@@ -12,20 +12,15 @@
 
     {{-- ── Static fallback (shown until builder data is saved) ────────────── --}}
 
-    {{-- Page Hero --}}
-    <div style="background:linear-gradient(135deg,#0D1B2A 0%,#1a3a5c 100%);
-                padding:120px 0 64px;text-align:center;color:#fff;">
-        <div class="container">
-            <p style="color:#C9A227;font-size:0.78rem;font-weight:700;letter-spacing:.14em;
-                      text-transform:uppercase;margin-bottom:14px;">GET IN TOUCH</p>
-            <h1 style="font-family:'Playfair Display',Georgia,serif;
-                       font-size:clamp(2rem,4vw,3rem);font-weight:700;
-                       margin-bottom:16px;line-height:1.2;">Contact Us</h1>
-            <p style="opacity:.8;font-size:1.05rem;max-width:520px;margin:0 auto;line-height:1.7;">
-                We'd love to hear from you. Reach out with any questions, reservations or special requests.
-            </p>
-        </div>
-    </div>
+    @include('frontend.partials.page-hero', [
+        'eyebrow'     => 'GET IN TOUCH',
+        'title'       => 'Contact Us',
+        'subtitle'    => "We'd love to hear from you. Reach out with any questions, reservations or special requests.",
+        'breadcrumbs' => [
+            ['label' => 'Home', 'url' => route('home')],
+            ['label' => 'Contact'],
+        ],
+    ])
 
     {{-- Main content --}}
     <section style="padding:72px 0;background:#f8f9fa;">

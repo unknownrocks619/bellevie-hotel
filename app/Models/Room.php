@@ -15,17 +15,18 @@ class Room extends Model
         'room_type_id', 'name', 'slug', 'room_number', 'description', 'content',
         'price_per_night', 'weekend_price', 'size_sqft', 'max_adults', 'max_children',
         'bed_type', 'floor', 'view_type', 'featured_image', 'gallery_images',
-        'is_featured', 'is_active', 'sort_order'
+        'is_featured', 'is_active', 'show_price', 'sort_order'
     ];
 
     protected function casts(): array
     {
         return [
-            'gallery_images' => 'array',
-            'is_featured' => 'boolean',
-            'is_active' => 'boolean',
+            'gallery_images'  => 'array',
+            'is_featured'     => 'boolean',
+            'is_active'       => 'boolean',
+            'show_price'      => 'boolean',
             'price_per_night' => 'decimal:2',
-            'weekend_price' => 'decimal:2',
+            'weekend_price'   => 'decimal:2',
         ];
     }
 

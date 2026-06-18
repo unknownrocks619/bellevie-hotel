@@ -13,6 +13,7 @@
 
 @foreach ($mainSections as $section)
     @php $config = $section['config'] ?? []; @endphp
+    @if(!empty($config['_hidden'])) @continue @endif
 
     @switch($section['type'] ?? '')
         @case('hero')
@@ -93,6 +94,10 @@
 
         @case('faq')
             @include('frontend.blocks.faq', ['config' => $config])
+        @break
+
+        @case('columns')
+            @include('frontend.blocks.columns', ['config' => $config])
         @break
 
         @default

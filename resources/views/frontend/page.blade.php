@@ -5,18 +5,14 @@
 @if(!empty($seoImage)) @section('seo_image', $seoImage) @endif
 @section('content')
 
-<!-- Page Hero -->
-<div style="padding-top: 80px; background: linear-gradient(rgba(13,27,42,0.85), rgba(13,27,42,0.85)), url('https://images.unsplash.com/photo-1568495248636-6432b97bd949?auto=format&fit=crop&w=1200&q=60') center/cover; min-height: 200px; display:flex; align-items:center;">
-    <div class="container py-5 text-white text-center">
-        <h1 class="mb-2">{{ $page->title }}</h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb justify-content-center mb-0">
-                <li class="breadcrumb-item"><a href="{{ route('home') }}" class="text-white-50">Home</a></li>
-                <li class="breadcrumb-item active text-white" aria-current="page">{{ $page->title }}</li>
-            </ol>
-        </nav>
-    </div>
-</div>
+@include('frontend.partials.page-hero', [
+    'title'       => $page->title,
+    'breadcrumbs' => [
+        ['label' => 'Home', 'url' => route('home')],
+        ['label' => $page->title],
+    ],
+    'minHeight'   => '280px',
+])
 
 @if($page->use_builder && !empty($page->builder_data))
 {{-- ── Builder-rendered page ── --}}

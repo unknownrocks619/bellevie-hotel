@@ -14,13 +14,11 @@
         ['icon' => 'bi-instagram', 'url' => Setting::get('instagram_url')],
         ['icon' => 'bi-twitter-x', 'url' => Setting::get('twitter_url')],
     ], fn($s) => !empty($s['url']) && $s['url'] !== '#');
+    $nested = $config['_nested'] ?? false;
 @endphp
 
 @if(!empty($infoItems))
-<section style="padding:40px 0 60px;background:#f8f9fa;">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
+@if(!$nested)<section style="padding:40px 0 60px;background:#f8f9fa;"><div class="container"><div class="row justify-content-center"><div class="col-lg-8">@endif
                 <div class="card border-0 shadow-sm"
                      style="border-radius:12px;overflow:hidden;background:#0D1B2A;color:#fff;">
                     <div class="card-body p-4 p-md-5">
@@ -86,8 +84,5 @@
 
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</section>
+@if(!$nested)</div></div></div></section>@endif
 @endif

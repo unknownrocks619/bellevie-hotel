@@ -63,13 +63,13 @@ class PageBuilderController extends Controller
         $raw = Setting::get('contact_builder_data', '');
         $builderData = $raw ? (json_decode($raw, true) ?? []) : [];
 
-        // Pre-populate with default locked blocks on first visit
+        // Pre-populate with default blocks on first visit (unlocked — user can hide but not delete)
         if (empty($builderData)) {
             $builderData = [
-                ['id' => 'chero_'.uniqid(),  'type' => 'contact-hero',        'config' => ['_locked' => true, 'eyebrow' => 'GET IN TOUCH', 'title' => 'Contact Us', 'subtitle' => "We'd love to hear from you. Reach out with any questions, reservations or special requests."]],
-                ['id' => 'cform_'.uniqid(),  'type' => 'contact-form',        'config' => ['_locked' => true, 'title' => 'Send us a Message', 'description' => "Fill in the form below and we'll get back to you within 24 hours."]],
-                ['id' => 'cinfo_'.uniqid(),  'type' => 'contact-info',        'config' => ['_locked' => true]],
-                ['id' => 'clinks_'.uniqid(), 'type' => 'contact-quick-links', 'config' => ['_locked' => true]],
+                ['id' => 'chero_'.uniqid(),  'type' => 'contact-hero',        'config' => ['eyebrow' => 'GET IN TOUCH', 'title' => 'Contact Us', 'subtitle' => "We'd love to hear from you. Reach out with any questions, reservations or special requests."]],
+                ['id' => 'cform_'.uniqid(),  'type' => 'contact-form',        'config' => ['title' => 'Send us a Message', 'description' => "Fill in the form below and we'll get back to you within 24 hours."]],
+                ['id' => 'cinfo_'.uniqid(),  'type' => 'contact-info',        'config' => []],
+                ['id' => 'clinks_'.uniqid(), 'type' => 'contact-quick-links', 'config' => []],
             ];
         }
 
@@ -87,8 +87,49 @@ class PageBuilderController extends Controller
     public function saveContact(Request $request)
     {
         $request->validate(['sections' => 'required|array']);
+
+        // Ensure all required contact block types exist somewhere in the sections tree
+        // (they may be hidden or nested inside a columns block, but must not be deleted)
+        $required = ['contact-hero', 'contact-form', 'contact-info', 'contact-quick-links'];
+        $found    = $this->collectBlockTypes($request->sections);
+        $missing  = array_diff($required, $found);
+
+        if (!empty($missing)) {
+            $labels = [
+                'contact-hero'        => 'Contact Hero',
+                'contact-form'        => 'Contact Form',
+                'contact-info'        => 'Contact Info',
+                'contact-quick-links' => 'Contact Quick Links',
+            ];
+            $names = implode(', ', array_map(fn($t) => $labels[$t] ?? $t, $missing));
+            return response()->json([
+                'success' => false,
+                'message' => "Cannot save — the following required blocks are missing from the page: {$names}. You may hide them, but they must remain on the page.",
+            ], 422);
+        }
+
         Setting::set('contact_builder_data', json_encode($request->sections));
         Cache::flush();
         return response()->json(['success' => true, 'message' => 'Contact page saved successfully.']);
+    }
+
+    /**
+     * Recursively collect all block type strings from a sections array,
+     * including blocks nested inside 'columns' blocks.
+     */
+    private function collectBlockTypes(array $sections): array
+    {
+        $types = [];
+        foreach ($sections as $section) {
+            $types[] = $section['type'] ?? '';
+            if (($section['type'] ?? '') === 'columns') {
+                foreach ($section['config']['columns'] ?? [] as $col) {
+                    foreach ($col['blocks'] ?? [] as $block) {
+                        $types[] = $block['type'] ?? '';
+                    }
+                }
+            }
+        }
+        return array_unique(array_filter($types));
     }
 }

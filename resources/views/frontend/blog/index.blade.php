@@ -1,11 +1,16 @@
 @extends('layouts.app')
 @section('content')
-<div class="container-fluid py-5" style="background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('https://via.placeholder.com/1920x400'); background-size: cover; background-position: center;">
-    <div class="container">
-        <h1 class="text-white mb-2">Hotel Blog</h1>
-        <p class="text-white-50">Stories, tips, and inspiration from Bellevie Hotel</p>
-    </div>
-</div>
+
+@include('frontend.partials.page-hero', [
+    'eyebrow'     => 'INSIGHTS & STORIES',
+    'title'       => isset($category) ? $category->name : 'Hotel Blog',
+    'subtitle'    => 'Stories, tips, and inspiration from Bellevie Hotel',
+    'breadcrumbs' => array_filter([
+        ['label' => 'Home', 'url' => route('home')],
+        ['label' => 'Blog', 'url' => route('blog.index')],
+        isset($category) ? ['label' => $category->name] : null,
+    ]),
+])
 
 <div class="container py-5">
     @if(isset($category))

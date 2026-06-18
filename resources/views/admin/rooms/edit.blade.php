@@ -236,11 +236,33 @@
                                 value="1" {{ old('is_active', $room->is_active) ? 'checked' : '' }}>
                             <label class="form-check-label" for="is_active">Active</label>
                         </div>
-                        <div class="form-check form-switch mb-4">
+                        <div class="form-check form-switch mb-3">
                             <input class="form-check-input" type="checkbox" name="is_featured" id="is_featured"
                                 value="1" {{ old('is_featured', $room->is_featured) ? 'checked' : '' }}>
                             <label class="form-check-label" for="is_featured">Featured Room</label>
                         </div>
+
+                        {{-- Price Display Toggle --}}
+                        <div class="rounded p-3 mb-4" style="background:#fdf8ea;border:1px solid #f0e0b0;">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <div>
+                                    <span class="fw-semibold" style="font-size:.85rem;color:#5a4200;">
+                                        <i class="bi bi-tag-fill me-1" style="color:#C9A227;"></i>Show Price
+                                    </span>
+                                </div>
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" name="show_price" id="show_price"
+                                        value="1"
+                                        {{ old('show_price', $room->show_price ?? true) ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="show_price"></label>
+                                </div>
+                            </div>
+                            <p class="mb-0" style="font-size:.74rem;color:#8a6d00;line-height:1.4;">
+                                When off, the price is hidden on the listings &amp; detail page. Guests see
+                                <em>"Price on request"</em> instead.
+                            </p>
+                        </div>
+
                         <button type="submit" class="btn w-100 text-white"
                             style="background:#C9A227;border:none;">Update Room</button>
                         <a href="{{ route('admin.rooms.index') }}" class="btn btn-secondary w-100 mt-2">Cancel</a>
@@ -250,10 +272,11 @@
                 <div class="card mb-4">
                     <div class="card-header">Featured Image</div>
                     <div class="card-body">
-                        <x-image-picker name="featured_image_id" label="" type="featured"
-                            :value="$featuredImage ?? null"
+                        <x-image-picker name="featured_image_id" label="" type="featured" :value="$featuredImage ?? null"
                             folder="bellevie_hotel/rooms" placeholder="No image selected" />
-                        @error('featured_image_id')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                        @error('featured_image_id')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
                     </div>
                 </div>
 
@@ -261,9 +284,10 @@
                     <div class="card-header">Gallery Images</div>
                     <div class="card-body">
                         <x-image-picker name="gallery_image_ids" label="" :multiple="true" type="gallery"
-                            :value="$galleryImages ?? collect()"
-                            folder="bellevie_hotel/rooms/gallery" placeholder="No images" />
-                        @error('gallery_image_ids')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                            :value="$galleryImages ?? collect()" folder="bellevie_hotel/rooms/gallery" placeholder="No images" />
+                        @error('gallery_image_ids')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
                         <small class="text-muted d-block mt-2">Upload or select multiple images from the library.</small>
                     </div>
                 </div>
@@ -271,7 +295,10 @@
 
         </div>
     </form>
+@endsection
 
+
+@push('page_script')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css">
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
     <script>
@@ -295,11 +322,11 @@
             placeholder: 'Write your content here…'
         });
 
-        document.querySelector('form').addEventListener('submit', function() {
-            document.getElementById('content').value = quill.root.innerHTML;
-        });
+        $('form').on('submit', function(e) {
+            $('#content').val(quill.root.innerHTML);
+        })
 
         const existing = document.getElementById('content').value;
         if (existing) quill.root.innerHTML = existing;
     </script>
-@endsection
+@endpush
