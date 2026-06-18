@@ -82,9 +82,77 @@
             background-color: #f9f8f6;
         }
 
+        /* ── Logo Ribbon ──────────────────────────────────────── */
+        .logo-ribbon-wrap {
+            position: fixed;
+            top: 0;
+            left: 25%;
+            transform: translateX(-50%);
+            z-index: 1200;
+            pointer-events: auto;
+        }
+
+        .logo-ribbon-link {
+            display: block;
+            text-decoration: none;
+            /* drop-shadow traces the clipped pentagon shape for both border glow and shadow */
+            filter:
+                drop-shadow(0 0 1px rgba(201,162,39,0.35))
+                drop-shadow(0 5px 14px rgba(0,0,0,0.18));
+        }
+
+        .logo-ribbon-inner {
+            background: #ffffff;
+            padding: 0 32px 44px;
+            position: relative;
+            clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
+            min-width: 168px;
+            text-align: center;
+            border-top: 3px solid var(--gold);
+        }
+
+        /* Subtle gold separator line inside ribbon */
+        .logo-ribbon-inner::after {
+            content: '';
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: 30%;
+            height: 1px;
+            /* background: linear-gradient(90deg, transparent, rgba(201,162,39,0.45), transparent); */
+        }
+
+        .ribbon-logo-img {
+            max-height: 110px;
+            width: auto;
+            display: block;
+            margin: 6px auto 0;
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.1));
+            transition: transform 0.25s ease;
+        }
+
+        .logo-ribbon-link:hover .ribbon-logo-img {
+            transform: scale(1.03);
+        }
+
+        .ribbon-text-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0D1B2A;
+            display: block;
+            padding-top: 12px;
+            line-height: 1.2;
+        }
+
+        .ribbon-text-logo span {
+            color: var(--gold);
+        }
+
+        /* ── Navbar ─────────────────────────────────────────── */
         .navbar {
             background-color: transparent;
-            padding: 1.5rem 0;
+            padding: 1.2rem 0;
             transition: all 0.3s ease;
             position: fixed;
             width: 100%;
@@ -99,9 +167,10 @@
             padding: 0.5rem 0;
         }
 
+        /* Mobile-only brand inside navbar */
         .navbar-brand {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             font-weight: 700;
             color: white !important;
         }
@@ -112,8 +181,10 @@
 
         .nav-link {
             color: white !important;
-            margin: 0 1rem;
+            margin: 0 0.75rem;
             transition: color 0.3s ease;
+            font-size: 0.95rem;
+            letter-spacing: 0.02em;
         }
 
         .nav-link:hover {
@@ -124,16 +195,18 @@
             background-color: var(--gold);
             color: white;
             border: none;
-            padding: 0.6rem 1.5rem;
+            padding: 0.55rem 1.4rem;
             border-radius: 4px;
             font-weight: 600;
             transition: all 0.3s ease;
+            font-size: 0.92rem;
         }
 
         .btn-book-now:hover {
             background-color: var(--gold-dark);
             color: white;
         }
+
 
         .hero {
             height: 100vh;
@@ -205,60 +278,101 @@
             transform: translateY(0);
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 991px) {
             .navbar-brand {
-                font-size: 1.5rem;
+                font-size: 1.4rem;
             }
+            .nav-link {
+                margin: 0.25rem 0;
+                padding: 0.6rem 0 !important;
+                border-bottom: 1px solid rgba(255,255,255,0.08);
+            }
+            .nav-link:last-child {
+                border-bottom: none;
+            }
+            /* Collapsed menu panel */
+            #navbarNav.show,
+            #navbarNav.collapsing {
+                background: rgba(10, 22, 36, 0.98);
+                border-top: 2px solid var(--gold);
+                border-radius: 0 0 10px 10px;
+                padding: 0.5rem 1rem 1rem;
+                margin-top: 0.5rem;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+            }
+            .btn-book-now {
+                display: inline-block;
+                margin-top: 0.5rem;
+                width: 100%;
+                text-align: center;
+                padding: 0.65rem 1rem;
+            }
+        }
 
+        @media (max-width: 768px) {
             .hero h1 {
                 font-size: 2rem;
-            }
-
-            .nav-link {
-                margin: 0.5rem 0;
             }
         }
     </style>
 </head>
 
 <body>
+
+    @php
+        $headerMenu = \App\Models\Menu::where('location', 'header')->with('items')->first();
+        $menuItems  = $headerMenu ? $headerMenu->items : collect();
+    @endphp
+
+    {{-- ── Logo Ribbon (desktop only, sits above navbar center) ── --}}
+    <div class="logo-ribbon-wrap d-none d-lg-block">
+        <a href="{{ route('home') }}" class="logo-ribbon-link">
+            <div class="logo-ribbon-inner">
+                @if ($logoType === 'image' && $logoUrl)
+                    <img src="{{ $logoUrl }}" alt="{{ $hotelName }}" class="ribbon-logo-img">
+                @else
+                    @php $parts = explode(' ', $hotelName, 2); @endphp
+                    <span class="ribbon-text-logo">
+                        {{ $parts[0] }}<span>{{ $parts[1] ?? '' }}</span>
+                    </span>
+                @endif
+            </div>
+        </a>
+    </div>
+
+    {{-- ── Navbar ──────────────────────────────────────────────── --}}
     <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('home') }}">
+
+            {{-- Brand shown on mobile only --}}
+            <a class="navbar-brand d-lg-none" href="{{ route('home') }}">
                 @if ($logoType === 'image' && $logoUrl)
-                    <img src="{{ $logoUrl }}" alt="{{ $hotelName }}" style="max-height: 48px; width: auto;">
+                    <img src="{{ $logoUrl }}" alt="{{ $hotelName }}" style="max-height:52px;width:auto;">
                 @else
                     @php $parts = explode(' ', $hotelName, 2); @endphp
                     {{ $parts[0] }}<span>{{ $parts[1] ?? '' }}</span>
                 @endif
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <i class="bi bi-list" style="color: white;"></i>
+
+            <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="bi bi-list" style="color:white;font-size:1.4rem;"></i>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    @php
-                        $headerMenu = \App\Models\Menu::where('location', 'header')->with('items')->first();
-                    @endphp
-                    @if ($headerMenu)
-                        @foreach ($headerMenu->items as $item)
-                            <li class="nav-item">
-                                <a class="nav-link" href="{{ $item->menuLink() }}">{{ $item->title }}</a>
-                            </li>
-                        @endforeach
-                    @endif
-                    <li class="nav-item">
-                        <a href="{{ route('booking.create') }}" class="btn-book-now ms-2">Book Now</a>
+                <ul class="navbar-nav ms-lg-auto align-items-lg-center w-100 justify-content-end">
+                    @foreach ($menuItems as $item)
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ $item->menuLink() }}">{{ $item->title }}</a>
+                        </li>
+                    @endforeach
+                    <li class="nav-item ms-lg-2">
+                        <a href="{{ route('booking.create') }}" class="btn-book-now">Book Now</a>
                     </li>
                 </ul>
             </div>
+
         </div>
     </nav>
-
-    @foreach ($headerMenu->items as $item)
-        {{-- @dd($item) --}}
-        {{-- @dump($item->menuLink()) --}}
-    @endforeach
 
     @yield('content')
 
