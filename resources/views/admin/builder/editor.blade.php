@@ -234,7 +234,7 @@ const BLOCK_TYPES = {
       ctaText: 'Book Now', ctaUrl: '/booking',
       ctaText2: '', ctaUrl2: '',
       backgroundImageUrl: '', backgroundImageId: null,
-      overlay: '0.5', minHeight: '500', textAlign: 'center',
+      overlay: '0.5', minHeight: '500', minHeightMd: '380', minHeightSm: '280', textAlign: 'center',
     },
     fields: [
       { key: 'title',            label: 'Title',                    type: 'text' },
@@ -245,7 +245,9 @@ const BLOCK_TYPES = {
       { key: 'ctaUrl2',          label: 'Secondary Button URL',     type: 'text' },
       { key: 'backgroundImageId', label: 'Background Image',        type: 'image' },
       { key: 'overlay',          label: 'Overlay Darkness (0–1)',   type: 'range', min: 0, max: 1, step: 0.05 },
-      { key: 'minHeight',        label: 'Min Height (px)',          type: 'number' },
+      { key: 'minHeight',        label: 'Min Height — Desktop (px)',  type: 'number' },
+      { key: 'minHeightMd',      label: 'Min Height — Tablet (px)',   type: 'number' },
+      { key: 'minHeightSm',      label: 'Min Height — Mobile (px)',   type: 'number' },
       { key: 'textAlign',        label: 'Text Align',               type: 'select', options: ['left','center','right'] },
     ],
     preview(cfg) {

@@ -1,12 +1,25 @@
 @php
-    $bg     = !empty($config['backgroundImageUrl'])
+    $bg      = !empty($config['backgroundImageUrl'])
         ? "url('{$config['backgroundImageUrl']}') center/cover"
         : "linear-gradient(135deg, #0D1B2A 0%, #1a3a5c 100%)";
-    $align  = $config['textAlign'] ?? 'center';
-    $height = ($config['minHeight'] ?? 500) . 'px';
+    $align   = $config['textAlign'] ?? 'center';
     $overlay = $config['overlay'] ?? 0.5;
+
+    // Responsive min-heights: desktop → tablet → mobile with sensible fallbacks
+    $hLg = (int) ($config['minHeight']   ?? 500);
+    $hMd = (int) ($config['minHeightMd'] ?? max(280, (int) ($hLg * 0.76)));
+    $hSm = (int) ($config['minHeightSm'] ?? max(220, (int) ($hMd * 0.74)));
+
+    $heroUid = 'hb' . substr(md5(serialize($config)), 0, 8);
 @endphp
-<section style="background:{{ $bg }};min-height:{{ $height }};display:flex;align-items:center;position:relative;overflow:hidden;">
+
+<style>
+    .{{ $heroUid }}          { min-height: {{ $hLg }}px; }
+    @media (max-width:991px) { .{{ $heroUid }} { min-height: {{ $hMd }}px; } }
+    @media (max-width:575px) { .{{ $heroUid }} { min-height: {{ $hSm }}px; } }
+</style>
+
+<section class="{{ $heroUid }}" style="background:{{ $bg }};display:flex;align-items:center;position:relative;overflow:hidden;">
     <div style="position:absolute;inset:0;background:rgba(0,0,0,{{ $overlay }});"></div>
     <div class="container" style="position:relative;z-index:1;text-align:{{ $align }};padding:80px 20px;">
         @if(!empty($config['title']))
