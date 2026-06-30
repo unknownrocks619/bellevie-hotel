@@ -348,9 +348,9 @@
     @endif
     <div class="logo-ribbon-wrap d-none d-lg-block">
         <a href="{{ route('home') }}" class="logo-ribbon-link">
-            <div class="logo-ribbon-inner  raw-logo">
+            <div class="logo-ribbon-inner-scroll  raw-logo">
                 @if ($logoType === 'image' && $logoUrl)
-                    <img src="{{ $logoUrl }}" alt="{{ $hotelName }}" class="ribbon-logo-img">
+                    <img src="{{ $logoUrl }}" alt="{{ $hotelName }}" class="ribbon-logo-img-scroll">
                 @else
                     @php $parts = explode(' ', $hotelName, 2); @endphp
                     <span class="ribbon-text-logo">
@@ -509,12 +509,12 @@
         $(window).scroll(function() {
             if ($(window).scrollTop() > 50) {
                 $('nav').addClass('scrolled');
-                $('.logo-ribbon-inner').addClass('logo-ribbon-inner-scroll').removeClass('logo-ribbon-inner');
-                $('.ribbon-logo-img').addClass('ribbon-logo-img-scroll').removeClass('ribbon-logo-img');
+                // $('.logo-ribbon-inner').addClass('logo-ribbon-inner-scroll').removeClass('logo-ribbon-inner');
+                // $('.ribbon-logo-img').addClass('ribbon-logo-img-scroll').removeClass('ribbon-logo-img');
             } else {
                 $('nav').removeClass('scrolled');
-                $('.logo-ribbon-inner-scroll').addClass('logo-ribbon-inner').removeClass('logo-ribbon-inner-scroll')
-                $('.ribbon-logo-img-scroll').addClass('ribbon-logo-img').removeClass('ribbon-logo-img-scroll');
+                // $('.logo-ribbon-inner-scroll').addClass('logo-ribbon-inner').removeClass('logo-ribbon-inner-scroll')
+                // $('.ribbon-logo-img-scroll').addClass('ribbon-logo-img').removeClass('ribbon-logo-img-scroll');
             }
         });
 
