@@ -59,7 +59,7 @@
                 <div class="mb-4">
                     <div class="d-flex align-items-center gap-3 mb-2">
                         <h1 class="mb-0">{{ $room->name }}</h1>
-                        <span class="badge bg-light text-dark"
+                        <span class="badge bg-light text-dark d-none"
                             style="font-size: 0.9rem;">{{ $room->roomType->name ?? '-' }}</span>
                     </div>
                     @if ($room->show_price ?? true)
@@ -78,10 +78,12 @@
                         <small class="text-muted">Bed Type</small><br>
                         <strong>{{ $room->bed_type ?? '-' }}</strong>
                     </div>
-                    <div class="col-md-6 mb-2 mb-md-0">
-                        <small class="text-muted">Size</small><br>
-                        <strong>{{ $room->size_sqft ?? '-' }} sqft</strong>
-                    </div>
+                    @if($room->size_sqft)
+                        <div class="col-md-6 mb-2 mb-md-0">
+                            <small class="text-muted">Size</small><br>
+                            <strong>{{ $room->size_sqft ?? '-' }} sqft</strong>
+                        </div>
+                    @endif
                     <div class="col-md-6 mt-2 mt-md-0">
                         <small class="text-muted">Capacity</small><br>
                         <strong>{{ $room->max_adults ?? 2 }} Adults
@@ -90,7 +92,7 @@
                             @endif
                         </strong>
                     </div>
-                    <div class="col-md-6 mt-2 mt-md-0">
+                    <div class="col-md-6 mt-2 mt-md-0 d-none">
                         <small class="text-muted">View Type</small><br>
                         <strong>{{ $room->view_type ?? 'Standard' }}</strong>
                     </div>
