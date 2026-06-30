@@ -116,7 +116,7 @@
             padding: 0 0px 33px;
             position: relative;
             clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
-            min-width: 168px;
+            min-width: 145px;
             text-align: center;
             border-top: 3px solid var(--gold);
         }
