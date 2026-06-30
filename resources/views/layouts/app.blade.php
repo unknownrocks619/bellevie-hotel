@@ -1,3 +1,4 @@
+@dump(url()->current())
 <!DOCTYPE html>
 <html lang="en">
 
