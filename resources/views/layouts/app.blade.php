@@ -330,9 +330,9 @@
     @endif
     <div class="logo-ribbon-wrap d-none d-lg-block">
         <a href="{{ route('home') }}" class="logo-ribbon-link">
-            <div class="logo-ribbon-inner">
+            <div class="logo-ribbon-inner  raw-logo">
                 @if ($logoType === 'image' && $logoUrl)
-                    <img src="{{ $logoUrl }}" alt="{{ $hotelName }}" class="ribbon-logo-img raw-logo">
+                    <img src="{{ $logoUrl }}" alt="{{ $hotelName }}" class="ribbon-logo-img">
                 @else
                     @php $parts = explode(' ', $hotelName, 2); @endphp
                     <span class="ribbon-text-logo">
