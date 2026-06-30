@@ -429,13 +429,13 @@
                         <i class="bi bi-geo-alt me-2"></i>{{ $footerAddress }}, {{ $footerCity }},
                         {{ $footerCountry }}
                     </p>
-                    <p class="text-white-50 small mb-1">
+                    <p class="text-white-50 small mb-1 d-flex">
                         <i class="bi bi-telephone me-2"></i><a href="tel:{{ $footerPhone }}"
-                            style="color: inherit; text-decoration: none;">{{ $footerPhone }}</a>
+                            style="color: inherit; text-decoration: none;font-size:.9rem">{{ $footerPhone }}</a>
                     </p>
-                    <p class="text-white-50 small mb-1">
+                    <p class="text-white-50 small mb-1 d-flex">
                         <i class="bi bi-envelope me-2"></i><a href="mailto:{{ $footerEmail }}"
-                            style="color: inherit; text-decoration: none;">{{ $footerEmail }}</a>
+                            style="color: inherit; text-decoration: none;font-size:.9rem">{{ $footerEmail }}</a>
                     </p>
                 </div>
                 <div class="col-md-3 mb-4">
