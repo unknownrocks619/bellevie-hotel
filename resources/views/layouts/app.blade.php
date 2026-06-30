@@ -425,9 +425,11 @@
                 <div class="col-md-3 mb-4">
                     <h6 class="text-uppercase fw-bold mb-3"
                         style="color: var(--gold); font-size: 0.8rem; letter-spacing: 1px;">Contact</h6>
-                    <p class="text-white-50 small mb-1">
-                        <i class="bi bi-geo-alt me-2"></i>{{ $footerAddress }}, {{ $footerCity }},
+                    <p class="text-white-50 small mb-1 d-flex">
+                        <i class="bi bi-geo-alt me-2"></i>
+                        <span style='font-size:.9rem'>{{ $footerAddress }}, {{ $footerCity }},
                         {{ $footerCountry }}
+                        </span>
                     </p>
                     <p class="text-white-50 small mb-1 d-flex">
                         <i class="bi bi-telephone me-2"></i><a href="tel:{{ $footerPhone }}"
