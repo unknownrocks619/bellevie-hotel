@@ -1,4 +1,3 @@
-@dump(url()->current())
 <!DOCTYPE html>
 <html lang="en">
 
@@ -326,11 +325,14 @@
     @endphp
 
     {{-- ── Logo Ribbon (desktop only, sits above navbar center) ── --}}
+    @if ($logoType === 'image' && $logoUrl)
+        <img src="{{ $logoUrl }}" alt="{{ $hotelName }}" class="ribbon-logo-img scrolled-logo d-none">
+    @endif
     <div class="logo-ribbon-wrap d-none d-lg-block">
         <a href="{{ route('home') }}" class="logo-ribbon-link">
             <div class="logo-ribbon-inner">
                 @if ($logoType === 'image' && $logoUrl)
-                    <img src="{{ $logoUrl }}" alt="{{ $hotelName }}" class="ribbon-logo-img">
+                    <img src="{{ $logoUrl }}" alt="{{ $hotelName }}" class="ribbon-logo-img raw-logo">
                 @else
                     @php $parts = explode(' ', $hotelName, 2); @endphp
                     <span class="ribbon-text-logo">
@@ -489,8 +491,12 @@
         $(window).scroll(function() {
             if ($(window).scrollTop() > 50) {
                 $('nav').addClass('scrolled');
+                $('.scrolled-logo').removeClass('d-none');
+                $('.raw-logo').addClass('d-none');
             } else {
                 $('nav').removeClass('scrolled');
+                $('.scrolled-logo').addClass('d-none');
+                $('.raw-logo').removeClass('d-none');
             }
         });
 
