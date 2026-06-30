@@ -236,7 +236,7 @@
                     style="position:relative;z-index:2;
                         display:flex;align-items:center;
                         justify-content:{{ $align }};
-                        padding:60px 48px;">
+                        padding:60px 80px;">
                     <div style="max-width:640px;text-align:{{ $textAlign }};color:#fff;">
 
                         @if (!empty($slide['title']))
