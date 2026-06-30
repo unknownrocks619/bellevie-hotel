@@ -34,11 +34,11 @@
                 <!-- Gallery Thumbnails -->
                 @php $galleryImages = $room->galleryImages(); @endphp
                 @if ($galleryImages->isNotEmpty())
-                    <div class="row g-2 mb-4">
+                    <div class="row">
                         @foreach ($galleryImages as $galleryImg)
-                            <div class="col-4">
+                            <div class="col">
                                 <img src="{{ $galleryImg->url }}" alt="{{ $room->name }}" class="img-fluid rounded"
-                                    style="height: 150px; object-fit: cover; cursor: pointer;" data-bs-toggle="modal"
+                                    style="height: 120px; object-fit: cover; cursor: pointer;" data-bs-toggle="modal"
                                     data-bs-target="#galleryModal" onclick="updateGalleryImage('{{ $galleryImg->url }}')">
                             </div>
                         @endforeach
