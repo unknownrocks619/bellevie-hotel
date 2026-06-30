@@ -111,6 +111,24 @@
             border-top: 3px solid var(--gold);
         }
 
+        .logo-ribbon-inner-scroll{
+            background: #ffffff;
+            padding: 0 0px 33px;
+            position: relative;
+            clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
+            min-width: 168px;
+            text-align: center;
+            border-top: 3px solid var(--gold);
+        }
+        .ribbon-logo-img-scroll {
+            max-height: 80px;
+            width: auto;
+            display: block;
+            margin: 6px auto 0;
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.1));
+            transition: transform 0.25s ease;
+        }
+
         /* Subtle gold separator line inside ribbon */
         .logo-ribbon-inner::after {
             content: '';
@@ -491,8 +509,12 @@
         $(window).scroll(function() {
             if ($(window).scrollTop() > 50) {
                 $('nav').addClass('scrolled');
+                $('.logo-ribbon-inner').addClass('logo-ribbon-inner-scroll').removeClass('logo-ribbon-inner');
+                $('.ribbon-logo-img').addClass('ribbon-logo-img-scroll').removeClass('ribbon-logo-img');
             } else {
                 $('nav').removeClass('scrolled');
+                $('.logo-ribbon-inner-scroll').addClass('logo-ribbon-inner').removeClass('logo-ribbon-inner-scroll')
+                $('.ribbon-logo-img-scroll').addClass('ribbon-logo-img').removeClass('ribbon-logo-img-scroll');
             }
         });
 
