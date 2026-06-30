@@ -491,12 +491,8 @@
         $(window).scroll(function() {
             if ($(window).scrollTop() > 50) {
                 $('nav').addClass('scrolled');
-                $('.scrolled-logo').removeClass('d-none');
-                $('.raw-logo').addClass('d-none');
             } else {
                 $('nav').removeClass('scrolled');
-                $('.scrolled-logo').addClass('d-none');
-                $('.raw-logo').removeClass('d-none');
             }
         });
 
