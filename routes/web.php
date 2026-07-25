@@ -25,6 +25,15 @@ use App\Http\Controllers\Admin\ImageController;
 use App\Http\Controllers\Admin\PageBuilderController;
 use App\Http\Controllers\Admin\BlogCategoryController;
 use App\Http\Controllers\Admin\FaqController;
+use App\Http\Controllers\Admin\EventAdminController;
+use App\Http\Controllers\Frontend\EventController;
+use App\Http\Controllers\Admin\RestaurantAdminController;
+use App\Http\Controllers\Admin\RestaurantMenuCategoryController;
+use App\Http\Controllers\Admin\RestaurantMenuItemController;
+use App\Http\Controllers\Admin\ConferenceAdminController;
+use App\Http\Controllers\Admin\ConferenceInquiryController;
+use App\Http\Controllers\Frontend\RestaurantController;
+use App\Http\Controllers\Frontend\ConferenceController;
 
 // Frontend Routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -36,11 +45,18 @@ Route::get('/rooms/{room}', [RoomController::class, 'show'])->name('rooms.show')
 Route::get('/booking', [BookingController::class, 'create'])->name('booking.create');
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
 Route::get('/booking/check-availability', [BookingController::class, 'checkAvailability'])->name('booking.check');
-Route::get('/booking/confirmation/{booking}', [BookingController::class, 'confirmation'])->name('booking.confirmation');
+Route::get('/booking/confirmation/{id}', [BookingController::class, 'confirmation'])
+    ->name('booking.confirmation')
+    ->middleware('signed');
 Route::get('/booking/cancel/{booking}/{token}', [BookingController::class, 'cancel'])->name('booking.cancel');
 Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
 Route::get('/blog/{post}', [BlogController::class, 'show'])->name('blog.show');
 Route::get('/blog/category/{category}', [BlogController::class, 'category'])->name('blog.category');
+Route::get('/events', [EventController::class, 'index'])->name('events.index');
+Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+Route::get('/restaurant', [RestaurantController::class, 'index'])->name('restaurant.index');
+Route::get('/conference', [ConferenceController::class, 'index'])->name('conference.index');
+Route::post('/conference/inquiry', [ConferenceController::class, 'storeInquiry'])->name('conference.inquiry');
 Route::get('/page/{slug}', [PageController::class, 'show'])->name('page.show');
 
 // Admin Routes
@@ -99,6 +115,27 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/contact/builder/save', [PageBuilderController::class, 'saveContact'])->name('builder.saveContact');
         Route::get('/faqs/by-category', [FaqController::class, 'byCategory'])->name('faqs.by-category');
         Route::resource('/faqs', FaqController::class);
+        Route::resource('/events', EventAdminController::class)->except('show');
+        // Restaurant page (singleton — no delete route, only toggle is_active)
+        Route::get('/restaurant', [RestaurantAdminController::class, 'edit'])->name('restaurant.edit');
+        Route::post('/restaurant', [RestaurantAdminController::class, 'update'])->name('restaurant.update');
+        Route::post('/restaurant/categories/reorder', [RestaurantMenuCategoryController::class, 'reorder'])->name('restaurant.categories.reorder');
+        Route::resource('/restaurant/categories', RestaurantMenuCategoryController::class)
+            ->parameters(['categories' => 'category'])
+            ->except('show')
+            ->names('restaurant.categories');
+        Route::post('/restaurant/menu-items/reorder', [RestaurantMenuItemController::class, 'reorder'])->name('restaurant.menu-items.reorder');
+        Route::post('/restaurant/menu-items/{menuItem}/toggle-status', [RestaurantMenuItemController::class, 'toggleStatus'])->name('restaurant.menu-items.toggle-status');
+        Route::resource('/restaurant/menu-items', RestaurantMenuItemController::class)
+            ->except('show')
+            ->names('restaurant.menu-items');
+        // Conference page (singleton — no delete route, only toggle is_active)
+        Route::get('/conference', [ConferenceAdminController::class, 'edit'])->name('conference.edit');
+        Route::post('/conference', [ConferenceAdminController::class, 'update'])->name('conference.update');
+        Route::get('/conference/inquiries', [ConferenceInquiryController::class, 'index'])->name('conference-inquiries.index');
+        Route::get('/conference/inquiries/{inquiry}', [ConferenceInquiryController::class, 'show'])->name('conference-inquiries.show');
+        Route::patch('/conference/inquiries/{inquiry}', [ConferenceInquiryController::class, 'update'])->name('conference-inquiries.update');
+        Route::delete('/conference/inquiries/{inquiry}', [ConferenceInquiryController::class, 'destroy'])->name('conference-inquiries.destroy');
         Route::resource('/amenities', AmenityController::class);
         Route::get('/pricing', [PricingOptimizerController::class, 'index'])->name('pricing.index');
         Route::post('/pricing/{room}/apply', [PricingOptimizerController::class, 'apply'])->name('pricing.apply');

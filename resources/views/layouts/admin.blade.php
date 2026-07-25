@@ -277,6 +277,18 @@
             class="nav-link {{ request()->routeIs('admin.faqs.*') ? 'active' : '' }}">
             <i class="bi bi-question-circle"></i> FAQ
         </a>
+        <a href="{{ route('admin.events.index') }}"
+            class="nav-link {{ request()->routeIs('admin.events.*') ? 'active' : '' }}">
+            <i class="bi bi-calendar-event"></i> Events &amp; Conferences
+        </a>
+        <a href="{{ route('admin.restaurant.edit') }}"
+            class="nav-link {{ request()->routeIs('admin.restaurant.*') ? 'active' : '' }}">
+            <i class="bi bi-egg-fried"></i> Restaurant
+        </a>
+        <a href="{{ route('admin.conference.edit') }}"
+            class="nav-link {{ request()->routeIs('admin.conference.*') || request()->routeIs('admin.conference-inquiries.*') ? 'active' : '' }}">
+            <i class="bi bi-easel"></i> Conference Hall
+        </a>
         <a href="{{ route('admin.menus.index') }}"
             class="nav-link {{ request()->routeIs('admin.menus.*') ? 'active' : '' }}">
             <i class="bi bi-list"></i> Menus

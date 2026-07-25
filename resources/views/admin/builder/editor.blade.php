@@ -804,6 +804,126 @@ const BLOCK_TYPES = {
     }
   },
 
+  // ── Events & Conferences ──────────────────────────────────────────────────
+  events: {
+    label: 'Events & Conferences', icon: 'bi-calendar-event', desc: 'Grid of upcoming events / conferences',
+    defaults: {
+      title: 'Events & Conferences',
+      subtitle: 'Discover what\'s happening at Bellevie',
+      typeFilter: 'all', count: '3', columns: '3',
+      upcomingOnly: true, featuredOnly: false,
+      showDate: true, showVenue: true, showType: true,
+      btnText: 'View Details', viewAllText: 'View All Events',
+      bgColor: '#ffffff',
+    },
+    fields: [
+      { key: 'title',        label: 'Section Title',    type: 'text' },
+      { key: 'subtitle',     label: 'Subtitle',         type: 'text' },
+      { key: 'typeFilter',   label: 'Show — all / only events / only conferences', type: 'select', options: ['all','event','conference'] },
+      { key: 'count',        label: 'Max Items to Show', type: 'number' },
+      { key: 'columns',      label: 'Columns',          type: 'select', options: ['2','3','4'] },
+      { key: 'upcomingOnly', label: 'Upcoming Only',    type: 'toggle' },
+      { key: 'featuredOnly', label: 'Featured Only',    type: 'toggle' },
+      { key: 'showDate',     label: 'Show Date',        type: 'toggle' },
+      { key: 'showVenue',    label: 'Show Venue',       type: 'toggle' },
+      { key: 'showType',     label: 'Show Type Badge',  type: 'toggle' },
+      { key: 'btnText',      label: 'Card Button Text', type: 'text' },
+      { key: 'viewAllText',  label: '"View All" Button Text (blank = hide)', type: 'text' },
+      { key: 'bgColor',      label: 'Background',       type: 'color' },
+    ],
+    preview(cfg) {
+      const cols = Math.min(parseInt(cfg.columns)||3, parseInt(cfg.count)||3);
+      const typeLabel = cfg.typeFilter === 'event' ? 'EVENT' : cfg.typeFilter === 'conference' ? 'CONFERENCE' : 'EVENT';
+      const cards = Array(cols).fill(0).map(() => `
+        <div style="flex:1;min-width:130px;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.08);">
+          <div style="height:70px;background:linear-gradient(135deg,#0D1B2A,#1a3a5c);position:relative;">
+            ${cfg.showType?`<span style="position:absolute;top:6px;left:6px;background:#C9A227;color:#fff;padding:2px 8px;border-radius:20px;font-size:0.55rem;font-weight:700;">${typeLabel}</span>`:''}
+          </div>
+          <div style="padding:10px;">
+            ${cfg.showDate?`<div style="color:#C9A227;font-size:0.62rem;font-weight:600;margin-bottom:4px;"><i class="bi bi-calendar3"></i> 12 Aug 2026</div>`:''}
+            <div style="height:8px;background:#ddd;border-radius:3px;margin-bottom:5px;width:85%;"></div>
+            <div style="height:6px;background:#eee;border-radius:3px;width:65%;margin-bottom:6px;"></div>
+            ${cfg.showVenue?`<div style="color:#aaa;font-size:0.6rem;"><i class="bi bi-geo-alt"></i> Grand Ballroom</div>`:''}
+          </div>
+        </div>`).join('');
+      return `<div style="background:${cfg.bgColor||'#fff'};padding:24px;border-radius:8px;">
+        <div style="text-align:center;margin-bottom:16px;">
+          <h4 style="font-family:serif;">${cfg.title||'Events & Conferences'}</h4>
+          ${cfg.subtitle?`<p style="color:#888;font-size:0.8rem;">${cfg.subtitle}</p>`:''}
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">${cards}</div>
+        ${cfg.viewAllText?`<div style="text-align:center;margin-top:14px;"><span style="border:2px solid #C9A227;color:#C9A227;padding:6px 20px;border-radius:4px;font-size:0.78rem;">${cfg.viewAllText}</span></div>`:''}
+        <div style="text-align:center;margin-top:10px;color:#bbb;font-size:0.72rem;">
+          Showing: ${cfg.typeFilter==='all'?'events & conferences':cfg.typeFilter+'s'}${cfg.upcomingOnly?' · upcoming only':''}${cfg.featuredOnly?' · featured only':''}
+        </div>
+      </div>`;
+    }
+  },
+
+  // ── Events & Conference Intro ─────────────────────────────────────────────
+  'events-intro': {
+    label: 'Events & Conference Intro', icon: 'bi-megaphone-fill', desc: 'Description section about your events & conference offering',
+    defaults: {
+      eyebrow: 'MEETINGS & CELEBRATIONS',
+      title: 'Host Your Event or Conference at Bellevie',
+      content: '<p>From intimate board meetings to grand conferences and unforgettable celebrations, our versatile venues, state-of-the-art facilities and dedicated events team ensure every occasion is a success.</p>',
+      imageId: null, imageUrl: '',
+      imagePosition: 'right',
+      highlight1Icon: 'bi-people',         highlight1Text: 'Up to 300 Guests',
+      highlight2Icon: 'bi-projector',      highlight2Text: 'A/V Equipment',
+      highlight3Icon: 'bi-cup-hot',        highlight3Text: 'Catering Service',
+      highlight4Icon: 'bi-calendar-check', highlight4Text: 'Event Planning',
+      ctaText: 'Explore Events', ctaUrl: '/events',
+      bgColor: '#f5f0e8',
+    },
+    fields: [
+      { key: 'eyebrow',        label: 'Top Label (small uppercase text)', type: 'text' },
+      { key: 'title',          label: 'Title',                type: 'text' },
+      { key: 'content',        label: 'Description',          type: 'richtext' },
+      { key: 'imageId',        label: 'Image (optional — text centres if blank)', type: 'image' },
+      { key: 'imagePosition',  label: 'Image Side',           type: 'select', options: ['left','right'] },
+      { key: 'highlight1Icon', label: 'Highlight 1 Icon (Bootstrap icon class)', type: 'text' },
+      { key: 'highlight1Text', label: 'Highlight 1 Text',     type: 'text' },
+      { key: 'highlight2Icon', label: 'Highlight 2 Icon',     type: 'text' },
+      { key: 'highlight2Text', label: 'Highlight 2 Text',     type: 'text' },
+      { key: 'highlight3Icon', label: 'Highlight 3 Icon',     type: 'text' },
+      { key: 'highlight3Text', label: 'Highlight 3 Text',     type: 'text' },
+      { key: 'highlight4Icon', label: 'Highlight 4 Icon',     type: 'text' },
+      { key: 'highlight4Text', label: 'Highlight 4 Text',     type: 'text' },
+      { key: 'ctaText',        label: 'Button Text',          type: 'text' },
+      { key: 'ctaUrl',         label: 'Button URL',           type: 'text' },
+      { key: 'bgColor',        label: 'Background',           type: 'color' },
+    ],
+    preview(cfg) {
+      const highlights = [1,2,3,4]
+        .map(i => ({ icon: cfg['highlight'+i+'Icon'], text: cfg['highlight'+i+'Text'] }))
+        .filter(h => h.text);
+      const hl = highlights.map(h => `
+        <div style="display:flex;align-items:center;gap:6px;min-width:45%;">
+          <div style="width:28px;height:28px;border-radius:50%;background:#C9A22720;color:#C9A227;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:0.8rem;">
+            <i class="bi ${h.icon||'bi-check-circle'}"></i>
+          </div>
+          <span style="font-size:0.72rem;font-weight:600;">${h.text}</span>
+        </div>`).join('');
+      const imgEl = cfg.imageUrl
+        ? `<img src="${cfg.imageUrl}" style="width:100%;border-radius:8px;border:3px solid #C9A227;">`
+        : `<div style="width:100%;height:150px;background:linear-gradient(135deg,#0D1B2A,#1a3a5c);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#C9A227;font-size:1.6rem;"><i class="bi bi-calendar-event"></i></div>`;
+      const textEl = `<div style="padding:0 12px;">
+        ${cfg.eyebrow?`<div style="color:#C9A227;font-size:0.62rem;font-weight:700;letter-spacing:.12em;margin-bottom:6px;">${cfg.eyebrow}</div>`:''}
+        <h4 style="font-family:serif;margin-bottom:8px;">${cfg.title||'Events & Conferences'}</h4>
+        <div style="font-size:0.78rem;color:#555;margin-bottom:10px;">${cfg.content||''}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;">${hl}</div>
+        ${cfg.ctaText?`<span style="background:#C9A227;color:#fff;padding:7px 16px;border-radius:4px;font-size:0.74rem;">${cfg.ctaText}</span>`:''}
+      </div>`;
+      return `<div style="background:${cfg.bgColor||'#f5f0e8'};padding:20px;border-radius:8px;">
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
+          <div style="flex:1;min-width:140px;">${cfg.imagePosition==='left'?imgEl:textEl}</div>
+          <div style="flex:1;min-width:140px;">${cfg.imagePosition==='left'?textEl:imgEl}</div>
+        </div>
+      </div>`;
+    }
+  },
+
   // ── Hero Slider ───────────────────────────────────────────────────────────
   'hero-slider': {
     label: 'Hero Image Slider', icon: 'bi-collection-play', desc: 'Full-width slider with multiple hero slides',

@@ -96,6 +96,14 @@
             @include('frontend.blocks.faq', ['config' => $config])
         @break
 
+        @case('events')
+            @include('frontend.blocks.events', ['config' => $config])
+        @break
+
+        @case('events-intro')
+            @include('frontend.blocks.events-intro', ['config' => $config])
+        @break
+
         @case('columns')
             @include('frontend.blocks.columns', ['config' => $config])
         @break

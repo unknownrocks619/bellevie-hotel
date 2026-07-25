@@ -2,12 +2,18 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Mail\BookingEnquiryMail;
 use App\Models\Room;
 use App\Models\Booking;
 use App\Models\Guest;
 use App\Models\Setting;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 
 class BookingController extends Controller
 {
@@ -113,12 +119,37 @@ class BookingController extends Controller
             'source' => 'website',
         ]);
 
-        return redirect()->route('booking.confirmation', $booking);
+        $confirmationUrl = URL::temporarySignedRoute(
+            'booking.confirmation',
+            now()->addHour(),
+            ['id' => Crypt::encryptString((string) $booking->id)]
+        );
+
+        $staffEmail = Setting::get('booking_enquiry_email') ?: Setting::get('hotel_email');
+
+        if ($staffEmail) {
+            try {
+                Mail::to($staffEmail)->send(new BookingEnquiryMail($booking, $confirmationUrl));
+            } catch (\Throwable $e) {
+                Log::error('Failed to send booking enquiry email to staff', [
+                    'booking_id' => $booking->id,
+                    'error'      => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return redirect($confirmationUrl);
     }
 
-    public function confirmation(Booking $booking)
+    public function confirmation(string $id)
     {
-        $booking->load('room');
+        try {
+            $bookingId = Crypt::decryptString($id);
+        } catch (DecryptException $e) {
+            abort(404);
+        }
+
+        $booking = Booking::with('room')->findOrFail($bookingId);
         return view('frontend.booking.confirmation', compact('booking'));
     }
 
