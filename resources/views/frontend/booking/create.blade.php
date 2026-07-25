@@ -252,7 +252,7 @@
                                         <span id="summaryBed" class="small">—</span>
                                     </div>
                                 </div>
-                                <div class="p-3">
+                                <div id="summaryTotalBlock" class="p-3">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="fw-bold">Estimated Total</span>
                                         <span id="summaryTotal" class="fw-bold fs-5" style="color:var(--gold)">—</span>
@@ -421,6 +421,7 @@
 <script>
 let selectedRoomId = null;
 let selectedRoomPrice = 0;
+let selectedRoomShowPrice = true;
 let fpCheckin = null, fpCheckout = null;
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -454,6 +455,7 @@ document.addEventListener('DOMContentLoaded', function () {
 function selectRoom(id, price, name, img, bed, maxAdults,showPrice = false) {
     selectedRoomId = id;
     selectedRoomPrice = parseFloat(price);
+    selectedRoomShowPrice = (showPrice == true);
 
     // Update hidden fields
     document.getElementById('room_id').value = id;
@@ -480,6 +482,9 @@ function selectRoom(id, price, name, img, bed, maxAdults,showPrice = false) {
         $('#summaryNightRate').parent().remove();
     }
 
+    const totalBlock = document.getElementById('summaryTotalBlock');
+    if (totalBlock) totalBlock.style.display = selectedRoomShowPrice ? '' : 'none';
+
     if (img) document.getElementById('summaryRoomImg').src = img;
 
     updateSummary();
@@ -493,6 +498,7 @@ function selectRoom(id, price, name, img, bed, maxAdults,showPrice = false) {
 function clearRoom() {
     selectedRoomId = null;
     selectedRoomPrice = 0;
+    selectedRoomShowPrice = true;
     document.getElementById('room_id').value = '';
     document.getElementById('bookingDetails').style.display = 'none';
     document.querySelectorAll('.room-card-select').forEach(c => c.classList.remove('selected'));
@@ -511,14 +517,18 @@ function updateSummary() {
         const msPerDay = 86400000;
         const nights = Math.round((new Date(co) - new Date(ci)) / msPerDay);
         if (nights > 0) {
-            const total = nights * selectedRoomPrice;
             document.getElementById('summaryNights').textContent = nights + ' night' + (nights > 1 ? 's' : '');
-            document.getElementById('summaryTotal').textContent = '$' + total.toLocaleString('en-US', { minimumFractionDigits: 0 });
+            if (selectedRoomShowPrice) {
+                const total = nights * selectedRoomPrice;
+                document.getElementById('summaryTotal').textContent = '$' + total.toLocaleString('en-US', { minimumFractionDigits: 0 });
+            }
             return;
         }
     }
     document.getElementById('summaryNights').textContent = '—';
-    document.getElementById('summaryTotal').textContent = '—';
+    if (selectedRoomShowPrice) {
+        document.getElementById('summaryTotal').textContent = '—';
+    }
 }
 </script>
 

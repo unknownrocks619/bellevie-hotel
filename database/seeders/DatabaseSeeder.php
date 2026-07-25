@@ -328,5 +328,8 @@ class DatabaseSeeder extends Seeder
                 'meta_description' => 'Bellevie Hotel ' . $pageData['title'],
             ]));
         }
+
+        // ── Restaurant & Conference Pages ──────────────────────────
+        $this->call(RestaurantConferenceSeeder::class);
     }
 }

@@ -103,7 +103,7 @@
 
         .logo-ribbon-inner {
             background: #ffffff;
-            padding: 0 32px 44px;
+            padding: 0 0 33px;
             position: relative;
             clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
             min-width: 168px;
@@ -138,6 +138,14 @@
             bottom: 30%;
             height: 1px;
             /* background: linear-gradient(90deg, transparent, rgba(201,162,39,0.45), transparent); */
+        }
+        .ribbon-logo-img-scroll {
+            max-height: 80px;
+            width: auto;
+            display: block;
+            margin: 6px auto 0;
+            filter: drop-shadow(0 1px 3px rgba(0,0,0,0.1));
+            transition: transform 0.25s ease;
         }
 
         .ribbon-logo-img {
