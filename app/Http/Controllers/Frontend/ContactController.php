@@ -3,6 +3,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Rules\Recaptcha;
 use Illuminate\Http\Request;
 
 class ContactController extends Controller
@@ -31,6 +32,7 @@ class ContactController extends Controller
             'phone'   => 'required|string',
             'subject' => 'required|string',
             'message' => 'required|string|min:10',
+            'g-recaptcha-response' => [new Recaptcha()],
         ]);
 
         // TODO: send email or store to DB

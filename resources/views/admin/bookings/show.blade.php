@@ -21,9 +21,14 @@
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span><i class="bi bi-calendar-check me-2"></i>Booking Details</span>
-                <span class="badge bg-{{ $colors[$booking->status] ?? 'secondary' }} fs-6">
-                    {{ ucfirst(str_replace('_', ' ', $booking->status)) }}
-                </span>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#emailConfirmationModal">
+                        <i class="bi bi-envelope-check me-1"></i>Email Confirmation
+                    </button>
+                    <span class="badge bg-{{ $colors[$booking->status] ?? 'secondary' }} fs-6">
+                        {{ ucfirst(str_replace('_', ' ', $booking->status)) }}
+                    </span>
+                </div>
             </div>
             <div class="card-body">
                 <div class="row g-3">
@@ -146,4 +151,52 @@
         </div>
     </div>
 </div>
+
+{{-- Email Confirmation Modal --}}
+<div class="modal fade" id="emailConfirmationModal" tabindex="-1" aria-labelledby="emailConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form action="{{ route('admin.bookings.send-confirmation-email', $booking) }}" method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title" id="emailConfirmationModalLabel">
+                        <i class="bi bi-envelope-check me-2"></i>Send Booking Confirmation Email
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small">
+                        This email will be sent to <strong>{{ $booking->guest_email }}</strong>.
+                        You can edit the text below before sending, or
+                        <a href="{{ route('admin.email-templates.index') }}" target="_blank">manage the default template</a>.
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <input type="text" name="subject" class="form-control" value="{{ $confirmationEmail['subject'] }}" required>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label">Message</label>
+                        <textarea name="body" rows="12" class="form-control" required>{{ $confirmationEmail['body'] }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn text-white" style="background:#C9A227;">
+                        <i class="bi bi-send me-1"></i>Send Email
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@if(session('open_email_modal'))
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var modal = new bootstrap.Modal(document.getElementById('emailConfirmationModal'));
+    modal.show();
+});
+</script>
+@endif
+
 @endsection

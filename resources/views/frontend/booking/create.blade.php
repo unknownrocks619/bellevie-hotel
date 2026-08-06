@@ -202,6 +202,8 @@
                                   placeholder="E.g. early check-in, high floor, honeymoon setup, dietary requirements…">{{ old('special_requests') }}</textarea>
                     </div>
 
+                    <x-recaptcha />
+
                     {{-- Submit --}}
                     <div class="d-flex gap-3 align-items-center mt-2">
                         <a href="{{ route('rooms.index') }}" class="btn btn-outline-secondary px-4">

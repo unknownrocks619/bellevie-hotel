@@ -7,6 +7,7 @@ use App\Models\Room;
 use App\Models\Booking;
 use App\Models\Guest;
 use App\Models\Setting;
+use App\Rules\Recaptcha;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -72,9 +73,10 @@ class BookingController extends Controller
             'children' => 'integer|min:0',
             'guest_first_name' => 'required|string',
             'guest_last_name' => 'required|string',
-            'guest_email' => 'required|email',
+            'guest_email' => 'required|email:dns',
             'guest_phone' => 'nullable|string',
             'special_requests' => 'nullable|string',
+            'g-recaptcha-response' => [new Recaptcha()],
         ]);
 
         $room = Room::findOrFail($request->room_id);

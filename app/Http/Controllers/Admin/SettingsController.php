@@ -58,6 +58,8 @@ class SettingsController extends Controller
             'site_logo_type'       => 'nullable|in:text,image',
             'map_embed'            => 'nullable|string',
             'logo_image_id'        => 'nullable|exists:images,id',
+            'recaptcha_site_key'   => 'nullable|string',
+            'recaptcha_secret_key' => 'nullable|string',
         ]);
 
         $settingKeys = [
@@ -68,6 +70,7 @@ class SettingsController extends Controller
             'mail_host', 'mail_port', 'mail_username', 'mail_password',
             'mail_from_name', 'mail_from_address', 'booking_enquiry_email',
             'primary_color', 'site_logo_type',
+            'recaptcha_site_key', 'recaptcha_secret_key',
         ];
 
         foreach ($settingKeys as $key) {
@@ -78,6 +81,7 @@ class SettingsController extends Controller
 
         // Boolean toggles — checkboxes are absent when unchecked, so handle explicitly
         Setting::set('show_featured_room_price', $request->has('show_featured_room_price') ? '1' : '0');
+        Setting::set('recaptcha_enabled', $request->has('recaptcha_enabled') ? '1' : '0');
 
         // Handle logo image from picker
         if ($request->filled('logo_image_id')) {

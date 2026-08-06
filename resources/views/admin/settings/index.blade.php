@@ -25,6 +25,10 @@
                     <button class="nav-link px-3 text-dark" id="social-tab" data-bs-toggle="tab" data-bs-target="#social"
                         type="button" role="tab">Social Media</button>
                 </li>
+                <li class="nav-item px-1" role="presentation">
+                    <button class="nav-link px-3 text-dark" id="security-tab" data-bs-toggle="tab" data-bs-target="#security"
+                        type="button" role="tab">Security</button>
+                </li>
             </ul>
 
             <form action="{{ route('admin.settings.update') }}" method="POST" id="settingsForm">
@@ -417,6 +421,58 @@
                         <button type="submit" class="btn btn-primary" style="background:#C9A227;border:none;">Save
                             Social Media Settings</button>
                     </div>
+
+                    <!-- Security Tab -->
+                    <div class="tab-pane fade" id="security" role="tabpanel">
+                        <div class="alert alert-info mb-3">
+                            <i class="bi bi-shield-lock"></i>
+                            Protect the Booking, Contact and Admin Login forms from bots with Google reCAPTCHA
+                            (the "I'm not a robot" checkbox).
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox"
+                                   name="recaptcha_enabled" value="1" id="recaptcha_enabled"
+                                   style="width:2.4em;height:1.3em;cursor:pointer;"
+                                   {{ (old('recaptcha_enabled', \App\Models\Setting::get('recaptcha_enabled', '0')) == '1') ? 'checked' : '' }}>
+                            <label class="form-check-label fw-semibold ms-1" for="recaptcha_enabled">
+                                Enable Google reCAPTCHA
+                            </label>
+                        </div>
+
+                        <div id="recaptchaFields"
+                             style="{{ (\App\Models\Setting::get('recaptcha_enabled', '0') == '1') ? '' : 'display:none;' }}">
+                            <div class="mb-3">
+                                <label class="form-label">Site Key (Public Key)</label>
+                                <input type="text" name="recaptcha_site_key"
+                                    class="form-control @error('recaptcha_site_key') is-invalid @enderror"
+                                    value="{{ old('recaptcha_site_key', $settings['recaptcha_site_key'] ?? '') }}"
+                                    placeholder="6Lc...">
+                                @error('recaptcha_site_key')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Secret Key (Client Secret)</label>
+                                <input type="password" name="recaptcha_secret_key"
+                                    class="form-control @error('recaptcha_secret_key') is-invalid @enderror"
+                                    value="{{ old('recaptcha_secret_key', $settings['recaptcha_secret_key'] ?? '') }}"
+                                    placeholder="6Lc...">
+                                @error('recaptcha_secret_key')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">
+                                    Get your keys from the
+                                    <a href="https://www.google.com/recaptcha/admin" target="_blank">Google reCAPTCHA Admin Console</a>
+                                    — choose reCAPTCHA v2, "I'm not a robot" Checkbox.
+                                </small>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="background:#C9A227;border:none;">Save
+                            Security Settings</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -446,6 +502,15 @@
             if (colorInput && hexInput) {
                 colorInput.addEventListener('change', function() {
                     hexInput.value = this.value;
+                });
+            }
+
+            // Show/hide reCAPTCHA key fields based on the enable checkbox
+            const recaptchaCheckbox = document.getElementById('recaptcha_enabled');
+            const recaptchaFields = document.getElementById('recaptchaFields');
+            if (recaptchaCheckbox && recaptchaFields) {
+                recaptchaCheckbox.addEventListener('change', function() {
+                    recaptchaFields.style.display = this.checked ? '' : 'none';
                 });
             }
         });

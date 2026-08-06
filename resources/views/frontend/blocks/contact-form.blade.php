@@ -100,6 +100,8 @@
                                 @error('message')<div class="invalid-feedback">{{ $message }}</div>@enderror
                             </div>
 
+                            <x-recaptcha />
+
                             <button type="submit" class="btn w-100 py-3 fw-semibold"
                                     style="background:#C9A227;color:#fff;border:none;border-radius:6px;
                                            font-size:1rem;letter-spacing:.04em;transition:background .2s;"
