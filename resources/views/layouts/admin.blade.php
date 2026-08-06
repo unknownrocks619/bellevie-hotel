@@ -303,6 +303,10 @@
             class="nav-link {{ request()->is('admin/contact/builder') ? 'active' : '' }}">
             <i class="bi bi-envelope-paper"></i> Contact Page
         </a>
+        <a href="{{ route('admin.email-templates.index') }}"
+            class="nav-link {{ request()->routeIs('admin.email-templates.*') ? 'active' : '' }}">
+            <i class="bi bi-envelope-paper"></i> Email Templates
+        </a>
         <a href="{{ route('admin.settings.index') }}"
             class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
             <i class="bi bi-gear"></i> Settings

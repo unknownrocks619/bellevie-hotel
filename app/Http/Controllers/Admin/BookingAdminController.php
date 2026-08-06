@@ -2,9 +2,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\BookingConfirmationMail;
 use App\Models\Booking;
+use App\Models\EmailTemplate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class BookingAdminController extends Controller
 {
@@ -74,7 +77,13 @@ class BookingAdminController extends Controller
     public function show(Booking $booking)
     {
         $booking->load(['room', 'guest']);
-        return view('admin.bookings.show', compact('booking'));
+
+        $confirmationTemplate = EmailTemplate::where('key', 'booking_confirmation')->first();
+        $confirmationEmail = $confirmationTemplate
+            ? $confirmationTemplate->renderForBooking($booking)
+            : ['subject' => 'Your Booking is Confirmed — ' . $booking->booking_reference, 'body' => ''];
+
+        return view('admin.bookings.show', compact('booking', 'confirmationEmail'));
     }
 
     public function updateStatus(Request $request, Booking $booking)
@@ -100,7 +109,35 @@ class BookingAdminController extends Controller
             }
         }
 
-        return back()->with('success', 'Booking status updated');
+        $redirect = back()->with('success', 'Booking status updated');
+
+        // When a booking is newly marked as confirmed, prompt the admin to
+        // send the customer their confirmation email.
+        if ($request->status === 'confirmed' && $oldStatus !== 'confirmed') {
+            $redirect->with('open_email_modal', true);
+        }
+
+        return $redirect;
+    }
+
+    /**
+     * Send the "booking confirmed" email to the customer, using the
+     * admin-editable email template with its shortcodes replaced.
+     */
+    public function sendConfirmationEmail(Request $request, Booking $booking)
+    {
+        $request->validate([
+            'subject' => 'required|string|max:255',
+            'body'    => 'required|string',
+        ]);
+
+        $booking->loadMissing('room');
+
+        Mail::to($booking->guest_email)->send(
+            new BookingConfirmationMail($booking, $request->subject, $request->body)
+        );
+
+        return back()->with('success', 'Confirmation email sent to ' . $booking->guest_email);
     }
 
     public function destroy(Booking $booking)

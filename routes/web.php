@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\GalleryController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\PageAdminController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\EmailTemplateController;
 use App\Http\Controllers\Admin\AmenityController;
 use App\Http\Controllers\Admin\PricingOptimizerController;
 use App\Http\Controllers\Admin\SeoController;
@@ -76,6 +77,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/bookings/export', [BookingAdminController::class, 'export'])->name('bookings.export');
         Route::get('/bookings/{booking}', [BookingAdminController::class, 'show'])->name('bookings.show');
         Route::patch('/bookings/{booking}/status', [BookingAdminController::class, 'updateStatus'])->name('bookings.status');
+        Route::post('/bookings/{booking}/send-confirmation-email', [BookingAdminController::class, 'sendConfirmationEmail'])->name('bookings.send-confirmation-email');
         Route::delete('/bookings/{booking}', [BookingAdminController::class, 'destroy'])->name('bookings.destroy');
         Route::get('/guests', [GuestController::class, 'index'])->name('guests.index');
         Route::get('/guests/{guest}', [GuestController::class, 'show'])->name('guests.show');
@@ -143,5 +145,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/pricing/{room}/clear-cooldown', [PricingOptimizerController::class, 'clearCooldown'])->name('pricing.clear-cooldown');
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
         Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
+        Route::get('/email-templates', [EmailTemplateController::class, 'index'])->name('email-templates.index');
+        Route::get('/email-templates/{emailTemplate}/edit', [EmailTemplateController::class, 'edit'])->name('email-templates.edit');
+        Route::put('/email-templates/{emailTemplate}', [EmailTemplateController::class, 'update'])->name('email-templates.update');
     });
 });

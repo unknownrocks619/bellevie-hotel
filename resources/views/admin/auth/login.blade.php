@@ -118,7 +118,9 @@
                 <input class="form-check-input" type="checkbox" id="remember" name="remember">
                 <label class="form-check-label" for="remember">Remember me</label>
             </div>
-            
+
+            <x-recaptcha />
+
             <button type="submit" class="btn-login">Sign In</button>
         </form>
         

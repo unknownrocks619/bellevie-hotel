@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Rules\Recaptcha;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,6 +18,7 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|min:6',
+            'g-recaptcha-response' => [new Recaptcha()],
         ]);
 
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password], $request->boolean('remember'))) {
